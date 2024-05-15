@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import Image from 'next/image';
 import { createColoringPage } from '@/app/actions';
+import SubmitButton from '@/components/buttons/SubmitButton/SubmitButton';
 
 type CreateColoringPageFormProps = {
   className?: string;
@@ -21,6 +22,7 @@ const CreateColoringPageForm = ({ className }: CreateColoringPageFormProps) => {
           console.log('Form data', formData);
 
           const response = await createColoringPage(formData);
+
           if (response) {
             setImageUrl(response);
           }
@@ -36,7 +38,7 @@ const CreateColoringPageForm = ({ className }: CreateColoringPageFormProps) => {
             color: 'black',
           }}
         />
-        <button type="submit">Submit</button>
+        <SubmitButton />
       </form>
       {imageUrl ? (
         <Image src={imageUrl} alt="Coloring page" width={1024} height={1024} />
