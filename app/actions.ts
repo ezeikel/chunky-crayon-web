@@ -6,6 +6,7 @@ import { put } from '@vercel/blob';
 import OpenAI from 'openai';
 import { MAX_ATTEMPTS, REFERENCE_IMAGES } from '@/constants';
 import prisma from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -163,6 +164,8 @@ export const createColoringImage = async (formData: FormData) => {
   // DEBUG:
   // eslint-disable-next-line no-console
   console.log('coloringImage', coloringImage);
+
+  revalidatePath('/');
 
   return coloringImage;
 };
