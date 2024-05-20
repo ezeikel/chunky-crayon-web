@@ -197,4 +197,7 @@ export const getAllColoringImages = async () =>
       blobDownloadUrl: true,
       pdfUrl: true,
     },
+    orderBy: {
+      createdAt: 'desc',
+    },
   });
