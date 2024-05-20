@@ -1,15 +1,21 @@
 import type { Metadata } from 'next';
+import { DynaPuff, Nunito_Sans } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
-import { Inter } from 'next/font/google';
 import { config } from '@fortawesome/fontawesome-svg-core';
 import PlausibleProvider from 'next-plausible';
 import '@fortawesome/fontawesome-svg-core/styles.css';
+import cn from '@/utils/cn';
 import Providers from './providers';
 import '@/global.css';
 
 config.autoAddCss = false;
 
-const inter = Inter({ subsets: ['latin'] });
+const dynaPuff = DynaPuff({ subsets: ['latin'], variable: '--font-dyna-puff' });
+
+const nunitoSans = Nunito_Sans({
+  subsets: ['latin'],
+  variable: '--font-nunito-sans',
+});
 
 export const metadata: Metadata = {
   title: 'Chunky Crayon - AI-Generated Coloring Book Pages',
@@ -58,8 +64,16 @@ export default function RootLayout({
       <head>
         <PlausibleProvider domain="chunkycrayon.com" />
       </head>
-      <body className={inter.className}>
-        <Providers>{children}</Providers>
+      <body
+        className={cn(
+          'font-nunito-sans antialiased',
+          dynaPuff.variable,
+          nunitoSans.variable,
+        )}
+      >
+        <Providers>
+          <main>{children}</main>
+        </Providers>
         <Analytics />
       </body>
     </html>

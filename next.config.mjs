@@ -10,6 +10,11 @@ const nextConfig = {
         hostname: 'oaidalleapiprodscus.blob.core.windows.net',
         pathname: '**',
       },
+      {
+        protocol: 'https',
+        hostname: 'x0odfckl5uaoyscm.public.blob.vercel-storage.com',
+        pathname: '**',
+      },
     ],
   },
   experimental: {

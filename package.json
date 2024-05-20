@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
     "email": "email dev --port 3005",
@@ -43,15 +43,18 @@
     "@neondatabase/serverless": "^0.9.3",
     "@prisma/adapter-neon": "^5.14.0",
     "@prisma/client": "5.14.0",
+    "@radix-ui/react-slot": "^1.0.2",
     "@react-pdf/renderer": "^3.4.4",
     "@sentry/nextjs": "^8",
     "@stripe/stripe-js": "^3.4.0",
     "@vercel/analytics": "^1.2.2",
     "@vercel/blob": "^0.22.3",
     "@vercel/postgres": "^0.8.0",
+    "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
     "formik": "^2.4.6",
+    "lucide-react": "^0.378.0",
     "next": "14.2.3",
     "next-auth": "beta",
     "next-plausible": "^3.12.0",
@@ -61,7 +64,8 @@
     "react-email": "^2.1.2",
     "resend": "^3.2.0",
     "stripe": "^15.6.0",
-    "tailwind-merge": "^2.3.0"
+    "tailwind-merge": "^2.3.0",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",

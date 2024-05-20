@@ -15,14 +15,16 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
-model ColoringPage {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  imageUrl    String
-  pdfUrl      String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model ColoringImage {
+  id              String   @id @default(cuid())
+  title           String
+  description     String
+  alt             String
+  blobUrl         String
+  blobDownloadUrl String
+  pdfUrl          String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  @@map("coloring_pages")
+  @@map("coloring_images")
 }
