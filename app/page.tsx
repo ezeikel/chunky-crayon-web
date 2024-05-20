@@ -4,7 +4,7 @@ import PageWrap from '@/components/PageWrap/PageWrap';
 import CreateColoringPageForm from '@/components/forms/CreateColoringPageForm/CreateColoringPageForm';
 import AllColoringPageImages from '@/components/AllColoringPageImages/AllColoringPageImages';
 
-export const maxDuration = 80;
+export const maxDuration = 150;
 
 const HomePage = () => (
   <PageWrap className='bg-gradient-to-br from-[#FFF2E6] to-[#FFE6CC]" justify-center items-center gap-y-16'>
