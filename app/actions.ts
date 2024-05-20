@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 'use server';
 
 import { put } from '@vercel/blob';
@@ -12,29 +10,37 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// generate coloring page from openai based on text/audio/image
-// TODO: Each image can be returned as either a URL or Base64 data, using the response_format parameter. URLs will expire after an hour.
+// generate coloring image from openai based on text/audio/image description
 const generateColoringImage = async (description: string) => {
   const response = await openai.images.generate({
     model: 'dall-e-3',
-    prompt: `${description}. The image should be in cartoon style with thick lines, low detail, no color, and no shading. Ensure no extraneous elements such as additional shapes or artifacts are included. Refer to the style of the provided reference images: ${REFERENCE_IMAGES.join(', ')}`,
+    prompt: `${description}. The image should be in cartoon style with thick lines, low detail, no color, no shading, and no fill. Only black lines should be used. Ensure no extraneous elements such as additional shapes or artifacts are included. Refer to the style of the provided reference images: ${REFERENCE_IMAGES.join(', ')}`,
     n: 1,
     size: '1024x1024',
     style: 'natural',
     quality: 'hd',
   });
 
-  return response.data[0].url;
+  // DEBUG:
+  // eslint-disable-next-line no-console
+  console.log('generateColoringImage response', response);
+
+  const { url, revised_prompt: revisedPrompt } = response.data[0];
+
+  return {
+    url,
+    revisedPrompt,
+  };
 };
 
-// generate an appropriate prompt for the coloring page
+// generate an appropriate prompt for the coloring image
 const cleanUpDescription = async (roughUserDescription: string) => {
   const response = await openai.chat.completions.create({
     model: 'gpt-4o',
     messages: [
       {
         role: 'system',
-        content: `You are an assistant that helps clean up and simplify user descriptions for generating coloring book images for children. Ensure the description is suitable for a cartoon-style image with thick lines, low detail, no color, and no shading. The target age is 3-8 years old. If the user's description does not include a scene or background, add an appropriate one. Consider the attached reference images: ${REFERENCE_IMAGES.join(', ')}. Do not include any extraneous elements in the description.`,
+        content: `You are an assistant that helps clean up and simplify user descriptions for generating coloring book images for children. Ensure the description is suitable for a cartoon-style image with thick lines, low detail, no color, no shading, and no fill. Only black lines should be used. The target age is 3-8 years old. If the user's description does not include a scene or background, add an appropriate one. Consider the attached reference images: ${REFERENCE_IMAGES.join(', ')}. Do not include any extraneous elements in the description.`,
       },
       {
         role: 'user',
@@ -66,6 +72,7 @@ export const createColoringImage = async (formData: FormData) => {
   // this is initially the user's description but can be updated based on the feedback from gpt-4o
   let userDescription = rawFormData.description;
   let imageUrl;
+  const generatedImages = [];
 
   // TODO: simplify the prompt as the attempt number increases
   // eslint-disable-next-line no-plusplus
@@ -76,7 +83,14 @@ export const createColoringImage = async (formData: FormData) => {
     console.log('cleanedUpUserDescription', cleanedUpUserDescription);
 
     // eslint-disable-next-line no-await-in-loop
-    imageUrl = await generateColoringImage(cleanedUpUserDescription as string);
+    const image = await generateColoringImage(
+      cleanedUpUserDescription as string,
+    );
+
+    // add generated image to the list of generated images
+    generatedImages.push(image);
+
+    imageUrl = image.url;
     // eslint-disable-next-line no-console
     console.log('imageUrl', imageUrl);
 
@@ -88,7 +102,7 @@ export const createColoringImage = async (formData: FormData) => {
       messages: [
         {
           role: 'system',
-          content: `You are an assistant that helps determine if an image matches the user's description and the specified rules for generating coloring book images. The image should be in cartoon style with thick lines, low detail, no color, and no shading. Provide a response as a JSON object with 'accepted', 'reason', and 'prompt' keys. If the image is accepted, set 'accepted' to true, 'reason' to the explanation, and 'prompt' to null. If the image is not accepted, set 'accepted' to false, 'reason' to the explanation, and provide a refined prompt to generate an improved image. Ensure the image does not contain any extraneous elements or artifacts.`,
+          content: `You are an assistant that helps determine if an image matches the user's description and the specified rules for generating coloring book images. The image should be in cartoon style with thick lines, low detail, no color, no shading, and no fill. Only black lines should be used. Provide a response as a JSON object with 'accepted', 'reason', and 'prompt' keys. If the image is accepted, set 'accepted' to true, 'reason' to the explanation, and 'prompt' to null. If the image is not accepted, set 'accepted' to false, 'reason' to the explanation, and provide a refined prompt to generate an improved image. Ensure the image does not contain any extraneous elements or artifacts.`,
         },
         {
           role: 'user',
@@ -128,13 +142,47 @@ export const createColoringImage = async (formData: FormData) => {
     }
 
     userDescription = checkImageAcceptanceResponseContent.prompt;
+
+    // DEBUG:
+    // eslint-disable-next-line no-console
+    console.log('generatedImages', generatedImages);
+
+    // TODO: if attempts is 3 e.g max attempts and this is still not accepted, compare the three images and select the best one
+    if (attempt === MAX_ATTEMPTS - 1) {
+      console.error('Failed to generate an acceptable image.');
+
+      // TODO: compare the three images and select the best one
+      // eslint-disable-next-line no-await-in-loop
+      const chooseBestImageResponse = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        response_format: { type: 'json_object' },
+        messages: [
+          {
+            role: 'system',
+            content: `You are an assistant that helps determine the best image from a list of generated images. The images should be in cartoon style with thick lines, low detail, no color, no shading, and no fill. Only black lines should be used. Provide a response as a JSON object with an 'imageUrl' key. Set 'imageUrl' to the URL of the best image based on the user's description: "${cleanedUpUserDescription}".`,
+          },
+          {
+            role: 'user',
+            content: `Based on the following images, select the best one:`,
+            ...generatedImages.map((generatedImage) => ({
+              type: 'image_url',
+              image_url: {
+                url: generatedImage.url,
+              },
+            })),
+          },
+        ],
+      });
+
+      imageUrl = JSON.parse(
+        chooseBestImageResponse.choices[0].message.content as string,
+      ).imageUrl;
+    }
   }
 
   if (!imageUrl) {
     throw new Error('Failed to generate an acceptable image');
   }
-
-  // TODO: if attempts is 3 e.g max attempts and this is still not accepted, compare the three images and select the best one
 
   // fetch image from url in a format suitable for saving in blob storage
   const response = await fetch(imageUrl);
@@ -146,24 +194,53 @@ export const createColoringImage = async (formData: FormData) => {
     access: 'public',
   });
 
-  // DEBUG:
-  // eslint-disable-next-line no-console
-  console.log('putResponse', putResponse);
-
-  // create new coloringImage in db
-  const coloringImage = await prisma.coloringImage.create({
-    data: {
-      title: 'Coloring Image title',
-      description: 'Coloring Image description',
-      alt: 'Coloring Image alt',
-      blobUrl: putResponse.url,
-      blobDownloadUrl: putResponse.downloadUrl,
-    },
+  const generateImageMetaResponse = await openai.chat.completions.create({
+    model: 'gpt-4o',
+    response_format: { type: 'json_object' },
+    messages: [
+      {
+        role: 'system',
+        content: `You are an assistant that generates metadata for images to be used for SEO and accessibility. The metadata should include a title, a description, and an alt text for the image alt attribute. The information should be concise, relevant to the image, and suitable for children aged 3-8.`,
+      },
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'text',
+            text: `Generate a JSON object with properties "title", "description" and "alt" for the generated image based on the following image:`,
+          },
+          {
+            type: 'image_url',
+            image_url: {
+              url: imageUrl as string,
+            },
+          },
+        ],
+      },
+    ],
   });
 
   // DEBUG:
   // eslint-disable-next-line no-console
-  console.log('coloringImage', coloringImage);
+  console.log(
+    'generateImageMetaResponse gpt-4o message: ',
+    JSON.stringify(generateImageMetaResponse.choices[0].message, null, 2),
+  );
+
+  const generateImageMetaResponseContent = JSON.parse(
+    generateImageMetaResponse.choices[0].message.content as string,
+  );
+
+  // create new coloringImage in db
+  const coloringImage = await prisma.coloringImage.create({
+    data: {
+      title: generateImageMetaResponseContent.title,
+      description: generateImageMetaResponseContent.description,
+      alt: generateImageMetaResponseContent.alt,
+      blobUrl: putResponse.url,
+      blobDownloadUrl: putResponse.downloadUrl,
+    },
+  });
 
   revalidatePath('/');
 

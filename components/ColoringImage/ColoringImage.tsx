@@ -15,7 +15,7 @@ const ColoringImage = async ({ id }: ColoringImageProps) => {
   return (
     <Image
       src={coloringImage.blobUrl}
-      alt="Coloring page"
+      alt={coloringImage.alt}
       width={1024}
       height={1024}
     />

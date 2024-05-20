@@ -7,7 +7,7 @@ type PageWrapProps = {
 
 const PageWrap = ({ children, className }: PageWrapProps) => (
   <div
-    className={cn('max-w-[100vw] min-h-screen flex flex-col p-4', {
+    className={cn('max-w-[100vw] min-h-screen flex flex-col p-4 pt-16', {
       [className as string]: !!className,
     })}
   >

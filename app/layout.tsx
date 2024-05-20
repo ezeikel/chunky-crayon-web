@@ -5,8 +5,9 @@ import { config } from '@fortawesome/fontawesome-svg-core';
 import PlausibleProvider from 'next-plausible';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 import cn from '@/utils/cn';
-import Providers from './providers';
+import Header from '@/components/Header/Header';
 import '@/global.css';
+import Providers from './providers';
 
 config.autoAddCss = false;
 
@@ -72,6 +73,7 @@ export default function RootLayout({
         )}
       >
         <Providers>
+          <Header />
           <main>{children}</main>
         </Providers>
         <Analytics />
