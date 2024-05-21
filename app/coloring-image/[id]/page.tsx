@@ -19,13 +19,21 @@ const ColoringImagePage = async ({
 
   return (
     <PageWrap className='bg-gradient-to-br from-[#FFF2E6] to-[#FFE6CC]" justify-center items-center gap-y-32'>
-      <div className="flex flex-col gap-y-4">
-        <h1 className="font-dyna-puff text-5xl font-bold text-center">
-          {coloringImage.title}
-        </h1>
-        <p className="text-center text-2xl">{coloringImage.description}</p>
+      <div className="max-w-3xl w-full p-8 bg-[#FF8A65] rounded-lg shadow-lg">
+        <div className="flex flex-col items-center text-center mb-8">
+          <h1 className="font-dyna-puff text-5xl font-bold mb-2 text-white">
+            {coloringImage.title}
+          </h1>
+          <div className="flex items-center gap-x-2 text-lg text-white font-mediu">
+            by Chunky Crayon
+          </div>
+        </div>
+        <ColoringImage
+          id={id}
+          showActions
+          className="rounded-lg shadow-lg bg-white"
+        />
       </div>
-      <ColoringImage id={id} />
     </PageWrap>
   );
 };

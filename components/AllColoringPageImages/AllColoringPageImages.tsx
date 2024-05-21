@@ -12,7 +12,10 @@ const AllColoringPageImages = async () => {
           href={`/coloring-image/${coloringImage.id}`}
           key={coloringImage.id}
         >
-          <ColoringImage id={coloringImage.id} />
+          <ColoringImage
+            id={coloringImage.id}
+            className="rounded-lg shadow-lg bg-white"
+          />
         </Link>
       ))}
     </div>
