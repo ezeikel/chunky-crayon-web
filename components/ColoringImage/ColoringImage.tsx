@@ -1,8 +1,8 @@
 import Image from 'next/image';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileArrowDown, faPrint } from '@fortawesome/pro-regular-svg-icons';
 import { getColoringImage } from '@/app/actions';
 import cn from '@/utils/cn';
+import SaveButton from '../buttons/SaveButton/SaveButton';
+import PrintButton from '../buttons/PrintButton/PrintButton';
 
 type ColoringImageProps = {
   id: string;
@@ -39,23 +39,8 @@ const ColoringImage = async ({
       />
       {showActions ? (
         <div className="absolute top-4 right-4 flex gap-x-4">
-          <button
-            className="bg-[#FF8A65] size-12 rounded-full flex items-center justify-center"
-            type="button"
-            aria-label="save as pdf"
-          >
-            <FontAwesomeIcon
-              icon={faFileArrowDown}
-              className="text-3xl text-white"
-            />
-          </button>
-          <button
-            className="bg-[#FF8A65] size-12 rounded-full flex items-center justify-center"
-            type="button"
-            aria-label="print"
-          >
-            <FontAwesomeIcon icon={faPrint} className="text-3xl text-white" />
-          </button>
+          <SaveButton />
+          <PrintButton />
         </div>
       ) : null}
     </div>

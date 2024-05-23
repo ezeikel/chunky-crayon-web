@@ -2,6 +2,7 @@
 
 import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { track } from '@vercel/analytics';
 import { createColoringImage } from '@/app/actions';
 import SubmitButton from '@/components/buttons/SubmitButton/SubmitButton';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,6 +22,15 @@ const CreateColoringPageForm = ({ className }: CreateColoringPageFormProps) => {
         // DEBUG:
         // eslint-disable-next-line no-console
         console.log('Form data', formData);
+
+        const rawFormData = {
+          description: (formData.get('description') as string) || '',
+        };
+
+        track('Submitted coloring image description', {
+          description: rawFormData.description,
+          type: 'text',
+        });
 
         const coloringImage = await createColoringImage(formData);
 
