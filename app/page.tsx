@@ -28,6 +28,9 @@ const HomePage = () => (
             className="text-[#FF8A65] text-base"
           />
         </p>
+        <p className="text-[#FF8A65] text-sm font-bold">
+          (This can take up to 2 minutes - please be patient)
+        </p>
       </div>
       <CreateColoringPageForm />
     </div>

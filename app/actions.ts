@@ -2,6 +2,7 @@
 
 import { put } from '@vercel/blob';
 import OpenAI from 'openai';
+// import { ChatCompletionContentPart } from 'openai/resources/index';
 import { MAX_ATTEMPTS, REFERENCE_IMAGES } from '@/constants';
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
@@ -72,7 +73,10 @@ export const createColoringImage = async (formData: FormData) => {
   // this is initially the user's description but can be updated based on the feedback from gpt-4o
   let userDescription = rawFormData.description;
   let imageUrl;
-  const generatedImages = [];
+  const generatedImages: {
+    url?: string;
+    revisedPrompt?: string;
+  }[] = [];
 
   // TODO: simplify the prompt as the attempt number increases
   // eslint-disable-next-line no-plusplus
@@ -151,6 +155,8 @@ export const createColoringImage = async (formData: FormData) => {
     if (attempt === MAX_ATTEMPTS - 1) {
       console.error('Failed to generate an acceptable image.');
 
+      // TODO: chaptgpt doesnt seem to like
+
       // TODO: compare the three images and select the best one
       // eslint-disable-next-line no-await-in-loop
       const chooseBestImageResponse = await openai.chat.completions.create({
@@ -159,20 +165,36 @@ export const createColoringImage = async (formData: FormData) => {
         messages: [
           {
             role: 'system',
-            content: `You are an assistant that helps determine the best image from a list of generated images. The images should be in cartoon style with thick lines, low detail, no color, no shading, and no fill. Only black lines should be used. Provide a response as a JSON object with an 'imageUrl' key. Set 'imageUrl' to the URL of the best image based on the user's description: "${cleanedUpUserDescription}".`,
+            content: `You are an assistant that helps determine the best image from a list of generated images. The images should be in cartoon style with thick lines, low detail, no color, no shading, and no fill. Only black lines should be used. Provide a response as a JSON object with an 'imageUrl' key and a reason key. Set 'imageUrl' to the URL of the best image based on the user's description: "${cleanedUpUserDescription}". Set 'reason' to the explanation for why the image was chosen.`,
           },
           {
             role: 'user',
-            content: `Based on the following images, select the best one:`,
-            ...generatedImages.map((generatedImage) => ({
-              type: 'image_url',
-              image_url: {
-                url: generatedImage.url,
+            content: [
+              {
+                type: 'text',
+                // TODO: chatgpt doesn't seem to like the images being sent as an array of type image_url so appending to the text
+                text: `Based on the following images, select the best one: ${generatedImages.map((generatedImage) => generatedImage.url).join(', ')}`,
               },
-            })),
+              // ...generatedImages.map(
+              //   (generatedImage) =>
+              //     ({
+              //       type: 'image_url',
+              //       image_url: {
+              //         url: generatedImage.url,
+              //       },
+              //     }) as ChatCompletionContentPart,
+              // ),
+            ],
           },
         ],
       });
+
+      // DEBUG:
+      // eslint-disable-next-line no-console
+      console.log(
+        'chooseBestImageResponse gpt-4o message: ',
+        JSON.stringify(chooseBestImageResponse.choices[0].message, null, 2),
+      );
 
       imageUrl = JSON.parse(
         chooseBestImageResponse.choices[0].message.content as string,
