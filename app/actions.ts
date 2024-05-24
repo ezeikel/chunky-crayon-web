@@ -1,11 +1,12 @@
 'use server';
 
 import { put } from '@vercel/blob';
+import { track } from '@vercel/analytics';
+import { revalidatePath } from 'next/cache';
 import OpenAI from 'openai';
 // import { ChatCompletionContentPart } from 'openai/resources/index';
 import { MAX_ATTEMPTS, REFERENCE_IMAGES } from '@/constants';
 import prisma from '@/lib/prisma';
-import { revalidatePath } from 'next/cache';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -200,6 +201,17 @@ export const createColoringImage = async (formData: FormData) => {
         chooseBestImageResponse.choices[0].message.content as string,
       ).imageUrl;
     }
+
+    // if no suitable image was generated, track the generated images and what chatgpt deemed as the most suitable image
+    track(
+      `Failed to generate an acceptable image within ${MAX_ATTEMPTS} attempts.`,
+      {
+        generatedImages: generatedImages
+          .map((generatedImage) => generatedImage.url)
+          .join(', '),
+        selectedImage: `Selected image is: ${imageUrl}. Reason is ${checkImageAcceptanceResponseContent.reason}`,
+      },
+    );
   }
 
   if (!imageUrl) {
