@@ -43,7 +43,7 @@ export const metadata: Metadata = {
         alt: 'Chunky Crayon AI-Generated Coloring Book Pages',
       },
     ],
-    locale: 'en-US',
+    locale: 'en-GB',
     type: 'website',
   },
   twitter: {

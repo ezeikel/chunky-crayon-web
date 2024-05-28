@@ -220,7 +220,7 @@ export const createColoringImage = async (formData: FormData) => {
     throw new Error('Failed to generate an acceptable image');
   }
 
-  const generateImageMetaResponse = await openai.chat.completions.create({
+  const generateImageMetadataResponse = await openai.chat.completions.create({
     model: 'gpt-4o',
     response_format: { type: 'json_object' },
     messages: [
@@ -233,7 +233,7 @@ export const createColoringImage = async (formData: FormData) => {
         content: [
           {
             type: 'text',
-            text: `Generate a JSON object with properties "title", "description" and "alt" for the generated image based on the following image:`,
+            text: `Generate a JSON object with properties "title", "description", "alt" and "tags" for the generated image based on the following image:`,
           },
           {
             type: 'image_url',
@@ -249,20 +249,21 @@ export const createColoringImage = async (formData: FormData) => {
   // DEBUG:
   // eslint-disable-next-line no-console
   console.log(
-    'generateImageMetaResponse gpt-4o message: ',
-    JSON.stringify(generateImageMetaResponse.choices[0].message, null, 2),
+    'generateImageMetadataResponse gpt-4o message: ',
+    JSON.stringify(generateImageMetadataResponse.choices[0].message, null, 2),
   );
 
-  const generateImageMetaResponseContent = JSON.parse(
-    generateImageMetaResponse.choices[0].message.content as string,
+  const generateImageMetadataResponseContent = JSON.parse(
+    generateImageMetadataResponse.choices[0].message.content as string,
   );
 
   // create new coloringImage in db
   const coloringImage = await prisma.coloringImage.create({
     data: {
-      title: generateImageMetaResponseContent.title,
-      description: generateImageMetaResponseContent.description,
-      alt: generateImageMetaResponseContent.alt,
+      title: generateImageMetadataResponseContent.title,
+      description: generateImageMetadataResponseContent.description,
+      alt: generateImageMetadataResponseContent.alt,
+      tags: generateImageMetadataResponseContent.tags,
     },
   });
 
@@ -328,6 +329,7 @@ export const getColoringImage = async (
       title: true,
       description: true,
       alt: true,
+      tags: true,
       url: true,
       qrCodeUrl: true,
     },

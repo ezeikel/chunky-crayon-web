@@ -6,6 +6,7 @@ import {
   View,
   StyleSheet,
   Image,
+  Link,
 } from '@react-pdf/renderer';
 
 // Create styles
@@ -63,7 +64,11 @@ const ColoringPageDocument = ({ coloringImage }: ColoringPageDocumentProps) => {
           </View>
           <View>
             <Text>Visit Chunky Crayon for more fun!</Text>
-            <Text>chunkycrayon.com</Text>
+            <Link
+              src={`https://chunkycrayon.com?utm_source=${coloringImage.id}&utm_medium=link&utm_campaign=coloring-image`}
+            >
+              www.chunkycrayon.com
+            </Link>
           </View>
         </View>
       </Page>
