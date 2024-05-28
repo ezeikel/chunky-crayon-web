@@ -1,4 +1,7 @@
-import { getAllColoringImages, getColoringImage } from '@/app/actions';
+import {
+  // getAllColoringImages,
+  getColoringImage,
+} from '@/app/actions';
 import ColoringImage from '@/components/ColoringImage/ColoringImage';
 import PageWrap from '@/components/PageWrap/PageWrap';
 
@@ -7,16 +10,17 @@ type ColoringImagePageProps = {
     id: string;
   };
 };
+// BUG:
+// TODO: Error: PDFDownloadLink is a web specific API. You're either using this component on Node, or your bundler is not loading react-pdf from the appropriate web build.
+// export const generateStaticParams = async () => {
+//   const images = await getAllColoringImages();
 
-export const generateStaticParams = async () => {
-  const images = await getAllColoringImages();
-
-  return images.map((image) => ({
-    params: {
-      id: image.id,
-    },
-  }));
-};
+//   return images.map((image) => ({
+//     params: {
+//       id: image.id,
+//     },
+//   }));
+// };
 
 export const generateMetadata = async ({
   params: { id },
