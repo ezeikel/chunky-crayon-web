@@ -2,7 +2,6 @@ import Image from 'next/image';
 import { getColoringImage } from '@/app/actions';
 import cn from '@/utils/cn';
 import SaveButton from '../buttons/SaveButton/SaveButton';
-import PrintButton from '../buttons/PrintButton/PrintButton';
 
 type ColoringImageProps = {
   id: string;
@@ -28,8 +27,8 @@ const ColoringImage = async ({
       })}
     >
       <Image
-        src={coloringImage.blobUrl}
-        alt={coloringImage.alt}
+        src={coloringImage.url as string}
+        alt={coloringImage.alt as string}
         width={1024}
         height={1024}
         quality={100}
@@ -39,8 +38,7 @@ const ColoringImage = async ({
       />
       {showActions ? (
         <div className="absolute top-4 right-4 flex gap-x-4">
-          <SaveButton />
-          <PrintButton />
+          <SaveButton coloringImage={coloringImage} />
         </div>
       ) : null}
     </div>

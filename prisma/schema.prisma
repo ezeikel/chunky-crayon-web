@@ -16,15 +16,14 @@ datasource db {
 }
 
 model ColoringImage {
-  id              String   @id @default(cuid())
-  title           String
-  description     String
-  alt             String
-  blobUrl         String
-  blobDownloadUrl String
-  pdfUrl          String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  alt         String
+  url         String?
+  qrCodeUrl   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("coloring_images")
 }

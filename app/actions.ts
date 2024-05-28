@@ -1,12 +1,14 @@
 'use server';
 
 import { put } from '@vercel/blob';
-import { track } from '@vercel/analytics';
+import { track } from '@vercel/analytics/server';
 import { revalidatePath } from 'next/cache';
 import OpenAI from 'openai';
 // import { ChatCompletionContentPart } from 'openai/resources/index';
+import QRCode from 'qrcode';
 import { MAX_ATTEMPTS, REFERENCE_IMAGES } from '@/constants';
 import prisma from '@/lib/prisma';
+import { ColoringImage } from '@prisma/client';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -218,16 +220,6 @@ export const createColoringImage = async (formData: FormData) => {
     throw new Error('Failed to generate an acceptable image');
   }
 
-  // fetch image from url in a format suitable for saving in blob storage
-  const response = await fetch(imageUrl);
-  const imageBuffer = await response.arrayBuffer();
-  const imageFileName = `uploads/coloring-images/${Date.now()}.webp`;
-
-  // store generated coloring image in blob storage
-  const putResponse = await put(imageFileName, imageBuffer, {
-    access: 'public',
-  });
-
   const generateImageMetaResponse = await openai.chat.completions.create({
     model: 'gpt-4o',
     response_format: { type: 'json_object' },
@@ -271,8 +263,51 @@ export const createColoringImage = async (formData: FormData) => {
       title: generateImageMetaResponseContent.title,
       description: generateImageMetaResponseContent.description,
       alt: generateImageMetaResponseContent.alt,
-      blobUrl: putResponse.url,
-      blobDownloadUrl: putResponse.downloadUrl,
+    },
+  });
+
+  // generate qr code for the coloring image
+  const qrCodePng = await QRCode.toDataURL(
+    `https://chunkycrayon.com?utm_source=${coloringImage.id}&utm_medium=qr-code&utm_campaign=coloring-image`,
+  );
+
+  const qrCodeBase64 = qrCodePng.replace(/^data:image\/png;base64,/, '');
+  const qrCodeBuffer = Buffer.from(qrCodeBase64, 'base64');
+
+  // fetch image from url in a format suitable for saving in blob storage
+  const response = await fetch(imageUrl);
+  const imageBuffer = await response.arrayBuffer();
+  const imageFileName = `uploads/coloring-images/${coloringImage.id}/image.webp`;
+
+  // save qr code png in blob storage
+  const qrCodeFileName = `uploads/coloring-images/${coloringImage.id}/qr-code.png`;
+
+  const [{ url: imageBlobUrl }, { url: qrCodeBlobUrl }] = await Promise.all([
+    // store generated coloring image in blob storage
+    put(imageFileName, imageBuffer, {
+      access: 'public',
+    }),
+    // store generated coloring image in blob storage
+    put(qrCodeFileName, qrCodeBuffer, {
+      access: 'public',
+    }),
+  ]);
+
+  // DEBUG:
+  // eslint-disable-next-line no-console
+  console.log('imageBlobUrl', imageBlobUrl);
+  // DEBUG:
+  // eslint-disable-next-line no-console
+  console.log('qrCodeBlobUrl', qrCodeBlobUrl);
+
+  // update coloringImage in db with qr code url
+  await prisma.coloringImage.update({
+    where: {
+      id: coloringImage.id,
+    },
+    data: {
+      qrCodeUrl: qrCodeBlobUrl,
+      url: imageBlobUrl,
     },
   });
 
@@ -281,7 +316,9 @@ export const createColoringImage = async (formData: FormData) => {
   return coloringImage;
 };
 
-export const getColoringImage = async (id: string) =>
+export const getColoringImage = async (
+  id: string,
+): Promise<Partial<ColoringImage> | null> =>
   prisma.coloringImage.findUnique({
     where: {
       id,
@@ -291,9 +328,8 @@ export const getColoringImage = async (id: string) =>
       title: true,
       description: true,
       alt: true,
-      blobUrl: true,
-      blobDownloadUrl: true,
-      pdfUrl: true,
+      url: true,
+      qrCodeUrl: true,
     },
   });
 
@@ -304,9 +340,7 @@ export const getAllColoringImages = async () =>
       title: true,
       description: true,
       alt: true,
-      blobUrl: true,
-      blobDownloadUrl: true,
-      pdfUrl: true,
+      url: true,
     },
     orderBy: {
       createdAt: 'desc',
