@@ -51,7 +51,8 @@ export const generateMetadata = async ({
       siteName: 'Chunky Crayon',
       images: [
         {
-          url: coloringImage.url || 'https://chunkycrayon.com/og-image.jpg',
+          url:
+            coloringImage.url || 'https://chunkycrayon.com/images/og-image.jpg',
           width: 1200,
           height: 630,
           alt:
@@ -66,7 +67,9 @@ export const generateMetadata = async ({
       card: 'summary_large_image',
       title,
       description,
-      images: [coloringImage.url || 'https://chunkycrayon.com/og-image.jpg'],
+      images: [
+        coloringImage.url || 'https://chunkycrayon.com/images/og-image.jpg',
+      ],
     },
   };
 };
