@@ -11,36 +11,47 @@ type ImageCanvasProps = {
 };
 
 const ImageCanvas = ({ coloringImage, className }: ImageCanvasProps) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const drawingCanvasRef = useRef<HTMLCanvasElement>(null);
+  const imageCanvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { selectedColor } = useColoringContext();
   const [ratio, setRatio] = useState<number>(1);
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
+    const drawingCanvas = drawingCanvasRef.current;
+    const imageCanvas = imageCanvasRef.current;
+    const drawingCtx = drawingCanvas?.getContext('2d');
+    const imageCtx = imageCanvas?.getContext('2d');
     const container = containerRef.current;
 
-    if (canvas && ctx && container) {
+    if (drawingCanvas && imageCanvas && drawingCtx && imageCtx && container) {
       const img = new Image();
 
       img.src = coloringImage.url as string;
       img.onload = () => {
         const imgRatio = img.width / img.height;
-        setRatio(imgRatio);
-        canvas.width = container.clientWidth;
-        canvas.height = container.clientWidth / imgRatio;
+        const newWidth = container.clientWidth;
+        const newHeight = newWidth / imgRatio;
 
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        setRatio(imgRatio);
+
+        drawingCanvas.width = newWidth;
+        drawingCanvas.height = newHeight;
+        imageCanvas.width = newWidth;
+        imageCanvas.height = newHeight;
+
+        imageCtx.drawImage(img, 0, 0, newWidth, newHeight);
       };
 
       const handleResize = () => {
         const newWidth = container.clientWidth;
         const newHeight = newWidth / ratio;
-        canvas.width = newWidth;
-        canvas.height = newHeight;
-        ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+        drawingCanvas.width = newWidth;
+        drawingCanvas.height = newHeight;
+
+        imageCtx.drawImage(img, 0, 0, newWidth, newHeight);
       };
 
       window.addEventListener('resize', handleResize);
@@ -54,19 +65,20 @@ const ImageCanvas = ({ coloringImage, className }: ImageCanvasProps) => {
   }, [coloringImage.url, ratio]);
 
   const colorAtPosition = (clientX: number, clientY: number) => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
+    const drawingCanvas = drawingCanvasRef.current;
+    const drawingCtx = drawingCanvas?.getContext('2d');
+    const imageCanvas = imageCanvasRef.current;
+    const rect = imageCanvas?.getBoundingClientRect();
 
-    if (canvas && ctx) {
-      const rect = canvas.getBoundingClientRect();
+    if (drawingCanvas && drawingCtx && rect) {
       const x = clientX - rect.left;
       const y = clientY - rect.top;
       const radius = 5;
 
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, 2 * Math.PI);
-      ctx.fillStyle = selectedColor;
-      ctx.fill();
+      drawingCtx.beginPath();
+      drawingCtx.arc(x, y, radius, 0, 2 * Math.PI);
+      drawingCtx.fillStyle = selectedColor;
+      drawingCtx.fill();
     }
   };
 
@@ -106,11 +118,12 @@ const ImageCanvas = ({ coloringImage, className }: ImageCanvasProps) => {
   return (
     <div
       ref={containerRef}
-      className={cn('w-full h-auto', {
+      className={cn('w-full h-auto relative', {
         [className as string]: !!className,
       })}
     >
       <canvas
+        className="w-full h-auto"
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMove}
@@ -118,7 +131,11 @@ const ImageCanvas = ({ coloringImage, className }: ImageCanvasProps) => {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        ref={canvasRef}
+        ref={drawingCanvasRef}
+      />
+      <canvas
+        className="absolute top-0 left-0 w-full h-auto pointer-events-none mix-blend-multiply"
+        ref={imageCanvasRef}
       />
     </div>
   );
