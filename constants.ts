@@ -49,3 +49,14 @@ export const REFERENCE_IMAGES = [
 ];
 
 export const MAX_ATTEMPTS = 3;
+
+export const COLORS = [
+  '#FF0000',
+  '#00FF00',
+  '#0000FF',
+  '#FFFF00',
+  '#FF00FF',
+  '#00FFFF',
+  '#000000',
+  '#FFFFFF',
+];

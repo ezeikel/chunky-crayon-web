@@ -1,19 +1,13 @@
 import Image from 'next/image';
 import { getColoringImage } from '@/app/actions';
 import cn from '@/utils/cn';
-import SaveButton from '../buttons/SaveButton/SaveButton';
 
 type ColoringImageProps = {
   id: string;
-  showActions?: boolean;
   className?: string;
 };
 
-const ColoringImage = async ({
-  id,
-  showActions = false,
-  className,
-}: ColoringImageProps) => {
+const ColoringImage = async ({ id, className }: ColoringImageProps) => {
   const coloringImage = await getColoringImage(id);
 
   if (!coloringImage) {
@@ -36,11 +30,6 @@ const ColoringImage = async ({
           objectFit: 'cover',
         }}
       />
-      {showActions ? (
-        <div className="absolute top-4 right-4 flex gap-x-4">
-          <SaveButton coloringImage={coloringImage} />
-        </div>
-      ) : null}
     </div>
   );
 };

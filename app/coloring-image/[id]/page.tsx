@@ -1,6 +1,8 @@
 import { getAllColoringImages, getColoringImage } from '@/app/actions';
-import ColoringImage from '@/components/ColoringImage/ColoringImage';
+import ColorPalette from '@/components/ColorPalette/ColorPalette';
+import ImageCanvas from '@/components/ImageCanvas/ImageCanvas';
 import PageWrap from '@/components/PageWrap/PageWrap';
+import SaveButton from '@/components/buttons/SaveButton/SaveButton';
 
 type ColoringImagePageProps = {
   params: {
@@ -94,11 +96,14 @@ const ColoringImagePage = async ({
             by Chunky Crayon
           </div>
         </div>
-        <ColoringImage
-          id={id}
-          showActions
-          className="rounded-lg shadow-lg bg-white"
-        />
+        <div className="flex flex-col gap-y-4">
+          <ColorPalette className="self-center" />
+          <ImageCanvas
+            coloringImage={coloringImage}
+            className="rounded-lg shadow-lg bg-white overflow-hidden"
+          />
+          <SaveButton coloringImage={coloringImage} className="self-center" />
+        </div>
       </div>
     </PageWrap>
   );
