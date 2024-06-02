@@ -53,21 +53,27 @@ const ImageCanvas = ({ coloringImage, className }: ImageCanvasProps) => {
     return undefined;
   }, [coloringImage.url, ratio]);
 
-  const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
+  const colorAtPosition = (clientX: number, clientY: number) => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
 
     if (canvas && ctx) {
       const rect = canvas.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const radius = 5;
+
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, 2 * Math.PI);
       ctx.fillStyle = selectedColor;
-      ctx.fillRect(x, y, 10, 10);
+      ctx.fill();
     }
   };
 
-  const handleMouseDown = () => setIsDrawing(true);
-
+  const handleMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    setIsDrawing(true);
+    colorAtPosition(event.clientX, event.clientY);
+  };
   const handleMouseUp = () => setIsDrawing(false);
 
   const handleMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -75,16 +81,26 @@ const ImageCanvas = ({ coloringImage, className }: ImageCanvasProps) => {
       return;
     }
 
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
+    colorAtPosition(event.clientX, event.clientY);
+  };
 
-    if (canvas && ctx) {
-      const rect = canvas.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      ctx.fillStyle = selectedColor;
-      ctx.fillRect(x, y, 10, 10); // fill 10x10 pixel area
+  const handleTouchStart = (event: React.TouchEvent<HTMLCanvasElement>) => {
+    setIsDrawing(true);
+    const touch = event.touches[0];
+    colorAtPosition(touch.clientX, touch.clientY);
+  };
+
+  const handleTouchMove = (event: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) {
+      return;
     }
+
+    const touch = event.touches[0];
+    colorAtPosition(touch.clientX, touch.clientY);
+  };
+
+  const handleTouchEnd = () => {
+    setIsDrawing(false);
   };
 
   return (
@@ -98,8 +114,10 @@ const ImageCanvas = ({ coloringImage, className }: ImageCanvasProps) => {
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseUp}
-        onClick={handleCanvasClick}
+        onMouseLeave={handleMouseUp} // ensure drawing stops if mouse leaves the canvas
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         ref={canvasRef}
       />
     </div>
