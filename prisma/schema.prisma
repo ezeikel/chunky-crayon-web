@@ -21,6 +21,7 @@ model ColoringImage {
   description String
   alt         String
   url         String?
+  svgUrl      String?
   qrCodeUrl   String?
   tags        String[]
   createdAt   DateTime @default(now())

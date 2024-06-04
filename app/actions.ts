@@ -6,6 +6,8 @@ import { revalidatePath } from 'next/cache';
 import OpenAI from 'openai';
 // import { ChatCompletionContentPart } from 'openai/resources/index';
 import QRCode from 'qrcode';
+import potrace from 'oslllo-potrace';
+import sharp from 'sharp';
 import { MAX_ATTEMPTS, REFERENCE_IMAGES } from '@/constants';
 import prisma from '@/lib/prisma';
 import { ColoringImage } from '@prisma/client';
@@ -278,21 +280,52 @@ export const createColoringImage = async (formData: FormData) => {
   // fetch image from url in a format suitable for saving in blob storage
   const response = await fetch(imageUrl);
   const imageBuffer = await response.arrayBuffer();
+
+  // convert png to svg using Potrace
+  const pngToSvg = async (buffer: ArrayBuffer): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      sharp(buffer)
+        .toFormat('png')
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        .toBuffer(async (err, pngBuffer) => {
+          if (err) {
+            reject(err);
+          } else {
+            const traced = await potrace(pngBuffer).trace();
+
+            // TODO: handle error and reject Promise
+
+            resolve(traced);
+          }
+        });
+    });
+  };
+
+  const svg = await pngToSvg(imageBuffer);
+  const svgBuffer = Buffer.from(svg);
+
   const imageFileName = `uploads/coloring-images/${coloringImage.id}/image.webp`;
+
+  // save svg to blob storage
+  const svgFileName = `uploades/coloring-images/${coloringImage.id}/image.svg`;
 
   // save qr code png in blob storage
   const qrCodeFileName = `uploads/coloring-images/${coloringImage.id}/qr-code.png`;
 
-  const [{ url: imageBlobUrl }, { url: qrCodeBlobUrl }] = await Promise.all([
-    // store generated coloring image in blob storage
-    put(imageFileName, imageBuffer, {
-      access: 'public',
-    }),
-    // store generated coloring image in blob storage
-    put(qrCodeFileName, qrCodeBuffer, {
-      access: 'public',
-    }),
-  ]);
+  const [{ url: imageBlobUrl }, { url: svgBlobUrl }, { url: qrCodeBlobUrl }] =
+    await Promise.all([
+      // store generated coloring image in blob storage
+      put(imageFileName, imageBuffer, {
+        access: 'public',
+      }),
+      put(svgFileName, svgBuffer, {
+        access: 'public',
+      }),
+      // store generated coloring image in blob storage
+      put(qrCodeFileName, qrCodeBuffer, {
+        access: 'public',
+      }),
+    ]);
 
   // DEBUG:
   // eslint-disable-next-line no-console
@@ -307,8 +340,9 @@ export const createColoringImage = async (formData: FormData) => {
       id: coloringImage.id,
     },
     data: {
-      qrCodeUrl: qrCodeBlobUrl,
       url: imageBlobUrl,
+      svgUrl: svgBlobUrl,
+      qrCodeUrl: qrCodeBlobUrl,
     },
   });
 
@@ -331,6 +365,7 @@ export const getColoringImage = async (
       alt: true,
       tags: true,
       url: true,
+      svgUrl: true,
       qrCodeUrl: true,
     },
   });

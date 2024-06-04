@@ -17,6 +17,17 @@ const ImageCanvas = ({ coloringImage, className }: ImageCanvasProps) => {
   const { selectedColor } = useColoringContext();
   const [ratio, setRatio] = useState<number>(1);
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
+  const [svgImage, setSvgImage] = useState<HTMLImageElement | null>(null);
+
+  const drawImageOnCanvas = (
+    img: HTMLImageElement,
+    imageCtx: CanvasRenderingContext2D,
+    newWidth: number,
+    newHeight: number,
+  ) => {
+    imageCtx.clearRect(0, 0, newWidth, newHeight);
+    imageCtx.drawImage(img, 0, 0, newWidth, newHeight);
+  };
 
   useEffect(() => {
     const drawingCanvas = drawingCanvasRef.current;
@@ -28,30 +39,75 @@ const ImageCanvas = ({ coloringImage, className }: ImageCanvasProps) => {
     if (drawingCanvas && imageCanvas && drawingCtx && imageCtx && container) {
       const img = new Image();
 
-      img.src = coloringImage.url as string;
-      img.onload = () => {
-        const imgRatio = img.width / img.height;
-        const newWidth = container.clientWidth;
-        const newHeight = newWidth / imgRatio;
+      fetch(coloringImage.svgUrl as string)
+        .then((response) => response.text())
+        .then((svgText) => {
+          const svgBlob = new Blob([svgText], { type: 'image/svg+xml' });
+          const svgUrl = URL.createObjectURL(svgBlob);
 
-        setRatio(imgRatio);
+          img.onload = () => {
+            setSvgImage(img);
 
-        drawingCanvas.width = newWidth;
-        drawingCanvas.height = newHeight;
-        imageCanvas.width = newWidth;
-        imageCanvas.height = newHeight;
+            const imgRatio = img.width / img.height;
+            const newWidth = container.clientWidth;
+            const newHeight = newWidth / imgRatio;
 
-        imageCtx.drawImage(img, 0, 0, newWidth, newHeight);
-      };
+            setRatio(imgRatio);
 
+            const dpr = window.devicePixelRatio || 1;
+            drawingCanvas.width = newWidth * dpr;
+            drawingCanvas.height = newHeight * dpr;
+            imageCanvas.width = newWidth * dpr;
+            imageCanvas.height = newHeight * dpr;
+
+            drawingCanvas.style.width = `${newWidth}px`;
+            drawingCanvas.style.height = `${newHeight}px`;
+            imageCanvas.style.width = `${newWidth}px`;
+            imageCanvas.style.height = `${newHeight}px`;
+
+            drawingCtx.scale(dpr, dpr);
+            imageCtx.scale(dpr, dpr);
+
+            drawImageOnCanvas(img, imageCtx, newWidth, newHeight);
+            URL.revokeObjectURL(svgUrl);
+          };
+
+          img.src = svgUrl;
+        });
+    }
+
+    return undefined;
+  }, [coloringImage.svgUrl]);
+
+  useEffect(() => {
+    const drawingCanvas = drawingCanvasRef.current;
+    const imageCanvas = imageCanvasRef.current;
+    const drawingCtx = drawingCanvas?.getContext('2d');
+    const imageCtx = imageCanvas?.getContext('2d');
+    const container = containerRef.current;
+
+    if (drawingCanvas && imageCanvas && drawingCtx && imageCtx && container) {
       const handleResize = () => {
+        if (!svgImage) return;
+
         const newWidth = container.clientWidth;
         const newHeight = newWidth / ratio;
 
-        drawingCanvas.width = newWidth;
-        drawingCanvas.height = newHeight;
+        const dpr = window.devicePixelRatio || 1;
+        drawingCanvas.width = newWidth * dpr;
+        drawingCanvas.height = newHeight * dpr;
+        imageCanvas.width = newWidth * dpr;
+        imageCanvas.height = newHeight * dpr;
 
-        imageCtx.drawImage(img, 0, 0, newWidth, newHeight);
+        drawingCanvas.style.width = `${newWidth}px`;
+        drawingCanvas.style.height = `${newHeight}px`;
+        imageCanvas.style.width = `${newWidth}px`;
+        imageCanvas.style.height = `${newHeight}px`;
+
+        drawingCtx.scale(dpr, dpr);
+        imageCtx.scale(dpr, dpr);
+
+        drawImageOnCanvas(svgImage, imageCtx, newWidth, newHeight);
       };
 
       window.addEventListener('resize', handleResize);
@@ -62,7 +118,7 @@ const ImageCanvas = ({ coloringImage, className }: ImageCanvasProps) => {
     }
 
     return undefined;
-  }, [coloringImage.url, ratio]);
+  }, [ratio, svgImage]);
 
   const colorAtPosition = (clientX: number, clientY: number) => {
     const drawingCanvas = drawingCanvasRef.current;

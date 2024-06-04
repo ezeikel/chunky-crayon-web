@@ -21,7 +21,7 @@ const ColoringImage = async ({ id, className }: ColoringImageProps) => {
       })}
     >
       <Image
-        src={coloringImage.url as string}
+        src={coloringImage.svgUrl as string}
         alt={coloringImage.alt as string}
         width={1024}
         height={1024}
