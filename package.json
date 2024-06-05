@@ -25,7 +25,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "tsc-files --noEmit ./next-env.d.ts ./next-auth.d.ts"
+      "tsc-files --noEmit ./next-env.d.ts ./next-auth.d.ts ./oslllo-potrace.d.ts"
     ],
     "**/*.+(js|jsx|json|ts|tsx|html|md)": [
       "prettier --ignore-path .gitignore --write",

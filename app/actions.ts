@@ -270,12 +270,14 @@ export const createColoringImage = async (formData: FormData) => {
   });
 
   // generate qr code for the coloring image
-  const qrCodePng = await QRCode.toDataURL(
-    `https://chunkycrayon.com?utm_source=${coloringImage.id}&utm_medium=qr-code&utm_campaign=coloring-image`,
+  const qrCodeSvg = await QRCode.toString(
+    `https://chunkycrayon.com?utm_source=${coloringImage.id}&utm_medium=pdf-qr-code&utm_campaign=coloring-image-pdf`,
+    {
+      type: 'svg',
+    },
   );
 
-  const qrCodeBase64 = qrCodePng.replace(/^data:image\/png;base64,/, '');
-  const qrCodeBuffer = Buffer.from(qrCodeBase64, 'base64');
+  const qrCodeSvgBuffer = Buffer.from(qrCodeSvg);
 
   // fetch image from url in a format suitable for saving in blob storage
   const response = await fetch(imageUrl);
@@ -302,37 +304,40 @@ export const createColoringImage = async (formData: FormData) => {
   };
 
   const svg = await pngToSvg(imageBuffer);
-  const svgBuffer = Buffer.from(svg);
+  const imageSvgBuffer = Buffer.from(svg);
 
   const imageFileName = `uploads/coloring-images/${coloringImage.id}/image.webp`;
 
   // save svg to blob storage
-  const svgFileName = `uploades/coloring-images/${coloringImage.id}/image.svg`;
+  const svgFileName = `uploads/coloring-images/${coloringImage.id}/image.svg`;
 
   // save qr code png in blob storage
-  const qrCodeFileName = `uploads/coloring-images/${coloringImage.id}/qr-code.png`;
+  const qrCodeFileName = `uploads/coloring-images/${coloringImage.id}/qr-code.svg`;
 
-  const [{ url: imageBlobUrl }, { url: svgBlobUrl }, { url: qrCodeBlobUrl }] =
-    await Promise.all([
-      // store generated coloring image in blob storage
-      put(imageFileName, imageBuffer, {
-        access: 'public',
-      }),
-      put(svgFileName, svgBuffer, {
-        access: 'public',
-      }),
-      // store generated coloring image in blob storage
-      put(qrCodeFileName, qrCodeBuffer, {
-        access: 'public',
-      }),
-    ]);
+  const [
+    { url: imageBlobUrl },
+    { url: imageSvgBlobUrl },
+    { url: qrCodeSvgBlobUrl },
+  ] = await Promise.all([
+    // store generated coloring image in blob storage
+    put(imageFileName, imageBuffer, {
+      access: 'public',
+    }),
+    put(svgFileName, imageSvgBuffer, {
+      access: 'public',
+    }),
+    // store generated coloring image in blob storage
+    put(qrCodeFileName, qrCodeSvgBuffer, {
+      access: 'public',
+    }),
+  ]);
 
   // DEBUG:
   // eslint-disable-next-line no-console
   console.log('imageBlobUrl', imageBlobUrl);
   // DEBUG:
   // eslint-disable-next-line no-console
-  console.log('qrCodeBlobUrl', qrCodeBlobUrl);
+  console.log('qrCodeSvgBlobUrl', qrCodeSvgBlobUrl);
 
   // update coloringImage in db with qr code url
   await prisma.coloringImage.update({
@@ -341,8 +346,8 @@ export const createColoringImage = async (formData: FormData) => {
     },
     data: {
       url: imageBlobUrl,
-      svgUrl: svgBlobUrl,
-      qrCodeUrl: qrCodeBlobUrl,
+      svgUrl: imageSvgBlobUrl,
+      qrCodeUrl: qrCodeSvgBlobUrl,
     },
   });
 

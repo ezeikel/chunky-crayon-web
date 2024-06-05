@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { ColoringImage } from '@prisma/client';
 import {
   Document,
@@ -5,37 +6,51 @@ import {
   Text,
   View,
   StyleSheet,
-  Image,
   Link,
 } from '@react-pdf/renderer';
+import SvgToReactPdf from '@/components/SvgToReactPdf/SvgToReactPdf';
+import fetchSvg from '@/utils/fetchSvg';
 
-// Create styles
+// create styles
 const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
     backgroundColor: '#FFFFFF',
     padding: 10,
   },
-  section: {
-    margin: 10,
-    padding: 10,
+  main: {
     flexGrow: 1,
-  },
-  title: {
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 20,
   },
   body: {
     fontSize: 12,
     lineHeight: 1.5,
   },
-  image: {
-    border: '1px dashed #000000',
+  coloringImage: {
+    width: '100%', // ensure the SVG fills the available width
+    height: 'auto', // maintain the aspect ratio
   },
-  qrCode: {
-    width: 350,
-    height: 350,
+  footer: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+  },
+  qrCodeImage: {
+    width: '120px',
+    height: '120px',
+  },
+  cta: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyItems: 'space-between',
+    gap: 4,
+    maxWidth: '50%',
+  },
+  ctaText: {
+    fontSize: 18,
+  },
+  ctaLink: {
+    fontSize: 16,
   },
 });
 
@@ -44,28 +59,49 @@ type ColoringPageDocumentProps = {
 };
 
 const ColoringPageDocument = ({ coloringImage }: ColoringPageDocumentProps) => {
-  if (!coloringImage.url) {
+  const [imageSvg, setImageSvg] = useState<string>();
+  const [qrCodeSvg, setQrCodeSvg] = useState<string>();
+
+  useEffect(() => {
+    if (!coloringImage.svgUrl) return;
+
+    fetchSvg(coloringImage.svgUrl).then((imageSvgString) => {
+      setImageSvg(imageSvgString);
+    });
+  }, [coloringImage.svgUrl]);
+
+  useEffect(() => {
+    if (!coloringImage.qrCodeUrl) return;
+
+    fetchSvg(coloringImage.qrCodeUrl).then((qrCodeSvgString) => {
+      setQrCodeSvg(qrCodeSvgString);
+    });
+  }, [coloringImage.qrCodeUrl]);
+
+  if (
+    !coloringImage.svgUrl ||
+    !imageSvg ||
+    !coloringImage.qrCodeUrl ||
+    !qrCodeSvg
+  ) {
     return null;
   }
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        <View style={styles.section}>
-          <Text style={styles.title}>{coloringImage.title}</Text>
-          <Image src={coloringImage.url} style={styles.image} />
+        <View style={styles.main}>
+          <SvgToReactPdf svgString={imageSvg} style={styles.coloringImage} />
         </View>
-        <View>
-          <View>
-            {coloringImage.qrCodeUrl ? (
-              <Image src={coloringImage.qrCodeUrl} style={styles.qrCode} />
-            ) : null}
-            <Text>Scan this QR code to create more pages like this</Text>
-          </View>
-          <View>
-            <Text>Visit Chunky Crayon for more fun!</Text>
+        <View style={styles.footer}>
+          <SvgToReactPdf svgString={qrCodeSvg} style={styles.qrCodeImage} />
+          <View style={styles.cta}>
+            <Text style={styles.ctaText}>
+              Scan the QR code to discover more coloring pages!
+            </Text>
             <Link
-              src={`https://chunkycrayon.com?utm_source=${coloringImage.id}&utm_medium=link&utm_campaign=coloring-image`}
+              src={`https://chunkycrayon.com?utm_source=${coloringImage.id}&utm_medium=pdf-link&utm_campaign=coloring-image-pdf`}
+              style={styles.ctaLink}
             >
               www.chunkycrayon.com
             </Link>
