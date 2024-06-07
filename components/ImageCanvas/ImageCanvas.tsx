@@ -14,6 +14,7 @@ const ImageCanvas = ({ coloringImage, className }: ImageCanvasProps) => {
   const drawingCanvasRef = useRef<HTMLCanvasElement>(null);
   const imageCanvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const offScreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const { selectedColor } = useColoringContext();
   const [ratio, setRatio] = useState<number>(1);
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
@@ -27,6 +28,21 @@ const ImageCanvas = ({ coloringImage, className }: ImageCanvasProps) => {
   ) => {
     imageCtx.clearRect(0, 0, newWidth, newHeight);
     imageCtx.drawImage(img, 0, 0, newWidth, newHeight);
+  };
+
+  const redrawDrawingCanvas = (
+    drawingCtx: CanvasRenderingContext2D,
+    offScreenCtx: CanvasRenderingContext2D,
+    newWidth: number,
+    newHeight: number,
+  ) => {
+    drawingCtx.clearRect(
+      0,
+      0,
+      drawingCtx.canvas.width,
+      drawingCtx.canvas.height,
+    );
+    drawingCtx.drawImage(offScreenCtx.canvas, 0, 0, newWidth, newHeight);
   };
 
   useEffect(() => {
@@ -69,6 +85,13 @@ const ImageCanvas = ({ coloringImage, className }: ImageCanvasProps) => {
             imageCtx.scale(dpr, dpr);
 
             drawImageOnCanvas(img, imageCtx, newWidth, newHeight);
+
+            if (!offScreenCanvasRef.current) {
+              offScreenCanvasRef.current = document.createElement('canvas');
+              offScreenCanvasRef.current.width = newWidth * dpr;
+              offScreenCanvasRef.current.height = newHeight * dpr;
+            }
+
             URL.revokeObjectURL(svgUrl);
           };
 
@@ -108,6 +131,19 @@ const ImageCanvas = ({ coloringImage, className }: ImageCanvasProps) => {
         imageCtx.scale(dpr, dpr);
 
         drawImageOnCanvas(svgImage, imageCtx, newWidth, newHeight);
+
+        if (offScreenCanvasRef.current) {
+          const offScreenCtx = offScreenCanvasRef.current?.getContext('2d');
+
+          if (offScreenCtx) {
+            redrawDrawingCanvas(
+              drawingCtx,
+              offScreenCtx,
+              newWidth * dpr,
+              newHeight * dpr,
+            );
+          }
+        }
       };
 
       window.addEventListener('resize', handleResize);
@@ -123,8 +159,8 @@ const ImageCanvas = ({ coloringImage, className }: ImageCanvasProps) => {
   const colorAtPosition = (clientX: number, clientY: number) => {
     const drawingCanvas = drawingCanvasRef.current;
     const drawingCtx = drawingCanvas?.getContext('2d');
-    const imageCanvas = imageCanvasRef.current;
-    const rect = imageCanvas?.getBoundingClientRect();
+    // const imageCanvas = imageCanvasRef.current;
+    const rect = drawingCanvas?.getBoundingClientRect();
 
     if (drawingCanvas && drawingCtx && rect) {
       const x = clientX - rect.left;
@@ -135,6 +171,16 @@ const ImageCanvas = ({ coloringImage, className }: ImageCanvasProps) => {
       drawingCtx.arc(x, y, radius, 0, 2 * Math.PI);
       drawingCtx.fillStyle = selectedColor;
       drawingCtx.fill();
+
+      if (offScreenCanvasRef.current) {
+        const offScreenCtx = offScreenCanvasRef.current.getContext('2d');
+        if (offScreenCtx) {
+          offScreenCtx.beginPath();
+          offScreenCtx.arc(x, y, radius, 0, 2 * Math.PI);
+          offScreenCtx.fillStyle = selectedColor;
+          offScreenCtx.fill();
+        }
+      }
     }
   };
 
