@@ -48,7 +48,7 @@ export const REFERENCE_IMAGES = [
   'https://x0odfckl5uaoyscm.public.blob.vercel-storage.com/reference-images/unicorns-8XVTm2dwIgIAUpah12vBMnWz7A02yo.webp',
 ];
 
-export const MAX_ATTEMPTS = 3;
+export const MAX_IMAGE_GENERATION_ATTEMPTS = 3;
 
 export const COLORS = [
   '#FF0000',
@@ -60,3 +60,5 @@ export const COLORS = [
   '#000000',
   '#FFFFFF',
 ];
+
+export const NUMBER_OF_CONCURRENT_IMAGE_GENERATION_REQUESTS = 3;

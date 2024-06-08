@@ -8,7 +8,11 @@ import OpenAI from 'openai';
 import QRCode from 'qrcode';
 import potrace from 'oslllo-potrace';
 import sharp from 'sharp';
-import { MAX_ATTEMPTS, REFERENCE_IMAGES } from '@/constants';
+import {
+  MAX_IMAGE_GENERATION_ATTEMPTS,
+  NUMBER_OF_CONCURRENT_IMAGE_GENERATION_REQUESTS,
+  REFERENCE_IMAGES,
+} from '@/constants';
 import prisma from '@/lib/prisma';
 import { ColoringImage } from '@prisma/client';
 
@@ -60,13 +64,6 @@ const cleanUpDescription = async (roughUserDescription: string) => {
     ],
   });
 
-  // DEBUG:
-  // eslint-disable-next-line no-console
-  console.log(
-    'generatedPromptResponse gpt-4o message: ',
-    JSON.stringify(response.choices[0].message, null, 2),
-  );
-
   return response.choices[0].message.content;
 };
 
@@ -78,30 +75,40 @@ export const createColoringImage = async (formData: FormData) => {
   // this is initially the user's description but can be updated based on the feedback from gpt-4o
   let userDescription = rawFormData.description;
   let imageUrl;
-  const generatedImages: {
+
+  // keep track of all generated images
+  const allGeneratedImages: {
     url?: string;
     revisedPrompt?: string;
   }[] = [];
 
   // TODO: simplify the prompt as the attempt number increases
   // eslint-disable-next-line no-plusplus
-  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+  for (let attempt = 0; attempt < MAX_IMAGE_GENERATION_ATTEMPTS; attempt++) {
     // eslint-disable-next-line no-await-in-loop
     const cleanedUpUserDescription = await cleanUpDescription(userDescription);
     // eslint-disable-next-line no-console
     console.log('cleanedUpUserDescription', cleanedUpUserDescription);
 
-    // eslint-disable-next-line no-await-in-loop
-    const image = await generateColoringImage(
-      cleanedUpUserDescription as string,
+    // generate images concurrently to speed up the process
+    const generateImagePromises = Array.from(
+      { length: NUMBER_OF_CONCURRENT_IMAGE_GENERATION_REQUESTS },
+      // eslint-disable-next-line @typescript-eslint/no-loop-func
+      () => generateColoringImage(cleanedUpUserDescription as string),
     );
 
-    // add generated image to the list of generated images
-    generatedImages.push(image);
+    // eslint-disable-next-line no-await-in-loop
+    const generatedImages = await Promise.all(generateImagePromises);
 
-    imageUrl = image.url;
+    // add generated image to the list of generated images
+    allGeneratedImages.push(...generatedImages);
+
+    // DEBUG:
     // eslint-disable-next-line no-console
-    console.log('imageUrl', imageUrl);
+    console.log(
+      'imageUrls',
+      generatedImages.map((genImage) => genImage.url).join(', '),
+    );
 
     // ask gpt-4o if the image is satisfactory
     // eslint-disable-next-line no-await-in-loop
@@ -111,58 +118,56 @@ export const createColoringImage = async (formData: FormData) => {
       messages: [
         {
           role: 'system',
-          content: `You are an assistant that helps determine if an image matches the user's description and the specified rules for generating coloring book images. The image should be in cartoon style with thick lines, low detail, no color, no shading, and no fill. Only black lines should be used. Provide a response as a JSON object with 'accepted', 'reason', and 'prompt' keys. If the image is accepted, set 'accepted' to true, 'reason' to the explanation, and 'prompt' to null. If the image is not accepted, set 'accepted' to false, 'reason' to the explanation, and provide a refined prompt to generate an improved image. Ensure the image does not contain any extraneous elements or artifacts.`,
+          content: `You are an assistant that helps determine if images match the user's description and the specified rules for generating coloring book images. The image should be in cartoon style with thick lines, low detail, no color, no shading, and no fill. Only black lines should be used. Provide a response as a JSON object with 'results', 'selectedImageUrl' and 'prompt' keys. 'results' should be an array of objects with each object representing the result of each of the ${NUMBER_OF_CONCURRENT_IMAGE_GENERATION_REQUESTS} images. The objects in the 'results' array should have 'accepted' and 'reason' keys. If the image is accepted, set 'accepted' to true, 'reason' to the explanation. If an image is not accepted, set 'accepted' to false, 'reason' to the explanation. If no images are accepted provide a refined prompt to generate an improved image under the 'prompt' property. If more than one image is accepted make a judgement call of which of the images fits the criteria the most and set its url as the 'selectedImageUrl. Ensure any accepted images do not contain any extraneous elements or artifacts.`,
         },
         {
           role: 'user',
           content: [
             {
               type: 'text',
-              text: `Does this image match the description and rules set out in the prompt: "${cleanedUpUserDescription}"?`,
+              text: `Does any of the following images: ${generatedImages.map((genImage) => genImage.url).join(', ')} match the description and rules set out in the prompt: "${cleanedUpUserDescription}"?`,
             },
-            {
-              type: 'image_url',
-              image_url: {
-                url: imageUrl as string,
-              },
-            },
+            // TODO: chatgpt doesn't seem to like the images being sent as an array of type image_url so appending to the text
+            // ...generatedImages.map((image) => ({
+            //   type: 'image_url',
+            //   image_url: {
+            //     url: image.url as string,
+            //   },
+            // })),
           ],
         },
       ],
     });
 
-    // DEBUG:
-    // eslint-disable-next-line no-console
-    console.log(
-      'checkImageAcceptanceResponse gpt-4o message: ',
-      JSON.stringify(
-        checkImageAcceptanceResponse.choices[0].message.content,
-        null,
-        2,
-      ),
-    );
-
     const checkImageAcceptanceResponseContent = JSON.parse(
       checkImageAcceptanceResponse.choices[0].message.content as string,
     );
 
-    if (checkImageAcceptanceResponseContent.accepted) {
+    // DEBUG:
+    // eslint-disable-next-line no-console
+    console.log(
+      'checkImageAcceptanceResponseContent',
+      checkImageAcceptanceResponseContent,
+    );
+
+    // if an image is accepted, set imageUrl to the selected image
+    if (checkImageAcceptanceResponseContent.selectedImageUrl) {
+      imageUrl = checkImageAcceptanceResponseContent.selectedImageUrl;
       break;
     }
 
+    // if no image is accepted, update the user description based on the refined prompt
     userDescription = checkImageAcceptanceResponseContent.prompt;
 
     // DEBUG:
     // eslint-disable-next-line no-console
-    console.log('generatedImages', generatedImages);
+    console.log('allGeneratedImages', allGeneratedImages);
 
-    // TODO: if attempts is 3 e.g max attempts and this is still not accepted, compare the three images and select the best one
-    if (attempt === MAX_ATTEMPTS - 1) {
+    // check if we have reached the maximum number of attempts
+    if (attempt === MAX_IMAGE_GENERATION_ATTEMPTS - 1) {
       console.error('Failed to generate an acceptable image.');
 
-      // TODO: chaptgpt doesnt seem to like
-
-      // TODO: compare the three images and select the best one
+      // ask gpt-4o to select the best image from the generated images
       // eslint-disable-next-line no-await-in-loop
       const chooseBestImageResponse = await openai.chat.completions.create({
         model: 'gpt-4o',
@@ -170,16 +175,16 @@ export const createColoringImage = async (formData: FormData) => {
         messages: [
           {
             role: 'system',
-            content: `You are an assistant that helps determine the best image from a list of generated images. The images should be in cartoon style with thick lines, low detail, no color, no shading, and no fill. Only black lines should be used. Provide a response as a JSON object with an 'imageUrl' key and a reason key. Set 'imageUrl' to the URL of the best image based on the user's description: "${cleanedUpUserDescription}". Set 'reason' to the explanation for why the image was chosen.`,
+            content: `You are an assistant that helps determine the best image from a list of generated images. The images should be in cartoon style with thick lines, low detail, no color, no shading, and no fill. Only black lines should be used. Provide a response as a JSON object with an 'imageUrl' key and a 'reason' key. Set 'imageUrl' to the URL of the best image based on the user's description: "${cleanedUpUserDescription}". Set 'reason' to the explanation for why the image was chosen.`,
           },
           {
             role: 'user',
             content: [
               {
                 type: 'text',
-                // TODO: chatgpt doesn't seem to like the images being sent as an array of type image_url so appending to the text
-                text: `Based on the following images, select the best one: ${generatedImages.map((generatedImage) => generatedImage.url).join(', ')}`,
+                text: `Based on the following images, select the best one: ${allGeneratedImages.map((generatedImage) => generatedImage.url).join(', ')}`,
               },
+              // TODO: chatgpt doesn't seem to like the images being sent as an array of type image_url so appending to the text
               // ...generatedImages.map(
               //   (generatedImage) =>
               //     ({
@@ -208,9 +213,9 @@ export const createColoringImage = async (formData: FormData) => {
 
     // if no suitable image was generated, track the generated images and what chatgpt deemed as the most suitable image
     track(
-      `Failed to generate an acceptable image within ${MAX_ATTEMPTS} attempts.`,
+      `Failed to generate an acceptable image within ${MAX_IMAGE_GENERATION_ATTEMPTS} attempts.`,
       {
-        generatedImages: generatedImages
+        generatedImages: allGeneratedImages
           .map((generatedImage) => generatedImage.url)
           .join(', '),
         selectedImage: `Selected image is: ${imageUrl}. Reason is ${checkImageAcceptanceResponseContent.reason}`,
@@ -248,15 +253,15 @@ export const createColoringImage = async (formData: FormData) => {
     ],
   });
 
+  const generateImageMetadataResponseContent = JSON.parse(
+    generateImageMetadataResponse.choices[0].message.content as string,
+  );
+
   // DEBUG:
   // eslint-disable-next-line no-console
   console.log(
-    'generateImageMetadataResponse gpt-4o message: ',
-    JSON.stringify(generateImageMetadataResponse.choices[0].message, null, 2),
-  );
-
-  const generateImageMetadataResponseContent = JSON.parse(
-    generateImageMetadataResponse.choices[0].message.content as string,
+    'generateImageMetadataResponseContent',
+    generateImageMetadataResponseContent,
   );
 
   // create new coloringImage in db
@@ -306,12 +311,13 @@ export const createColoringImage = async (formData: FormData) => {
   const svg = await pngToSvg(imageBuffer);
   const imageSvgBuffer = Buffer.from(svg);
 
+  // save image webp to blob storage
   const imageFileName = `uploads/coloring-images/${coloringImage.id}/image.webp`;
 
-  // save svg to blob storage
+  // save image svg to blob storage
   const svgFileName = `uploads/coloring-images/${coloringImage.id}/image.svg`;
 
-  // save qr code png in blob storage
+  // save qr code svg in blob storage
   const qrCodeFileName = `uploads/coloring-images/${coloringImage.id}/qr-code.svg`;
 
   const [
@@ -331,13 +337,6 @@ export const createColoringImage = async (formData: FormData) => {
       access: 'public',
     }),
   ]);
-
-  // DEBUG:
-  // eslint-disable-next-line no-console
-  console.log('imageBlobUrl', imageBlobUrl);
-  // DEBUG:
-  // eslint-disable-next-line no-console
-  console.log('qrCodeSvgBlobUrl', qrCodeSvgBlobUrl);
 
   // update coloringImage in db with qr code url
   await prisma.coloringImage.update({
