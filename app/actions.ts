@@ -378,10 +378,7 @@ export const getAllColoringImages = async () =>
   prisma.coloringImage.findMany({
     select: {
       id: true,
-      title: true,
-      description: true,
-      alt: true,
-      url: true,
+      svgUrl: true,
     },
     orderBy: {
       createdAt: 'desc',

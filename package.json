@@ -11,7 +11,7 @@
     "check-types": "tsc",
     "prettier": "prettier . --ignore-path .gitignore '**/*.+(js|mjs|jsx|json|ts|tsx|css|html|md)'",
     "format": "bun prettier --write ",
-    "check-format": "bunprettier --list-different",
+    "check-format": "bun prettier --list-different",
     "preinstall": "bunx only-allow bun",
     "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
