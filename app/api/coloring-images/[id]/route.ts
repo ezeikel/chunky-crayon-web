@@ -8,5 +8,14 @@ export const GET = async (
 ) => {
   const { id } = params;
 
-  return Response.json({ coloringImage: await getColoringImage(id) });
+  return Response.json(
+    { coloringImage: await getColoringImage(id) },
+    {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+    },
+  );
 };
