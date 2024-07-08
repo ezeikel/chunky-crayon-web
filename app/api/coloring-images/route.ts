@@ -1,6 +1,4 @@
-/* eslint-disable import/prefer-default-export */
-
-import { getAllColoringImages } from '@/app/actions';
+import { getAllColoringImages, createColoringImage } from '@/app/actions';
 
 export const GET = async () =>
   Response.json(
@@ -13,3 +11,21 @@ export const GET = async () =>
       },
     },
   );
+
+export const POST = async (request: Request) => {
+  const { description } = await request.json();
+
+  const formData = new FormData();
+  formData.append('description', description);
+
+  return Response.json(
+    { coloringImage: await createColoringImage(formData) },
+    {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+    },
+  );
+};
