@@ -1,5 +1,7 @@
 import { getAllColoringImages, createColoringImage } from '@/app/actions';
 
+export const maxDuration = 150;
+
 export const GET = async () =>
   Response.json(
     { coloringImages: await getAllColoringImages() },
