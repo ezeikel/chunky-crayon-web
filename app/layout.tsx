@@ -1,22 +1,15 @@
 import type { Metadata } from 'next';
-import { DynaPuff, Nunito_Sans } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { config } from '@fortawesome/fontawesome-svg-core';
 import PlausibleProvider from 'next-plausible';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 import cn from '@/utils/cn';
 import Header from '@/components/Header/Header';
+import { tondo, rooneySans } from '@/fonts';
 import '@/global.css';
 import Providers from './providers';
 
 config.autoAddCss = false;
-
-const dynaPuff = DynaPuff({ subsets: ['latin'], variable: '--font-dyna-puff' });
-
-const nunitoSans = Nunito_Sans({
-  subsets: ['latin'],
-  variable: '--font-nunito-sans',
-});
 
 export const metadata: Metadata = {
   title: 'Chunky Crayon - Creative Coloring & Learning Fun',
@@ -67,9 +60,9 @@ export default function RootLayout({
       </head>
       <body
         className={cn(
-          'font-nunito-sans antialiased',
-          dynaPuff.variable,
-          nunitoSans.variable,
+          'font-rooney-sans antialiased',
+          tondo.variable,
+          rooneySans.variable,
         )}
       >
         <Providers>

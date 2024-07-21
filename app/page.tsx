@@ -1,9 +1,8 @@
 import type { Viewport } from 'next';
-import { faMagicWandSparkles } from '@fortawesome/pro-regular-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import PageWrap from '@/components/PageWrap/PageWrap';
 import CreateColoringPageForm from '@/components/forms/CreateColoringPageForm/CreateColoringPageForm';
 import AllColoringPageImages from '@/components/AllColoringPageImages/AllColoringPageImages';
+import Intro from '@/components/Intro/Intro';
 
 export const maxDuration = 150;
 
@@ -17,22 +16,10 @@ export const viewport: Viewport = {
 };
 
 const HomePage = () => (
-  <PageWrap className='bg-gradient-to-br from-[#FFF2E6] to-[#FFE6CC]" justify-center items-center gap-y-16'>
-    <div className="max-w-lg flex flex-col gap-y-6 p-8 bg-white rounded-lg shadow-lg">
-      <div className="text-center">
-        <p className="font-dyna-puff text-[#FF8A65] font-base text-lg">
-          Unleash your creativity! Describe a scene and let Chunky Crayon
-          generate a coloring book page for you &nbsp;
-          <FontAwesomeIcon
-            icon={faMagicWandSparkles}
-            className="text-[#FF8A65] text-base"
-          />
-        </p>
-        <p className="text-gray-400 text-sm font-bold">
-          (This can take up to 2 minutes - please be patient)
-        </p>
-      </div>
-      <CreateColoringPageForm />
+  <PageWrap className='bg-gradient-to-br from-[#FFF2E6] to-[#FFE6CC]" items-center gap-y-16'>
+    <div className="flex flex-col md:flex-row gap-16 w-full items-center md:items-start md:justify-start">
+      <Intro className="flex-grow-1 flex-shrink-1 basis-1 md:basis-1/2" />
+      <CreateColoringPageForm className="flex-grow-1 flex-shrink-0 basis-1 md:basis-1/2" />
     </div>
     <AllColoringPageImages />
   </PageWrap>

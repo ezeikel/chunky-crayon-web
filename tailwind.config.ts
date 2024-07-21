@@ -3,12 +3,7 @@ import { fontFamily } from 'tailwindcss/defaultTheme';
 
 const config = {
   darkMode: ['class'],
-  content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
-  ],
+  content: ['./components/**/*.{ts,tsx}', './app/**/*.{ts,tsx}'],
   prefix: '',
   theme: {
     container: {
@@ -20,8 +15,8 @@ const config = {
     },
     extend: {
       fontFamily: {
-        'dyna-puff': ['var(--font-dyna-puff)', ...fontFamily.serif],
-        'nunito-sans': ['var(--font-nunito-sans)', ...fontFamily.sans],
+        tondo: ['var(--font-tondo)', ...fontFamily.sans],
+        'rooney-sans': ['var(--font-rooney-sans)', ...fontFamily.sans],
       },
       colors: {
         border: 'hsl(var(--border))',
@@ -57,6 +52,7 @@ const config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        orange: '#FF8A65',
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -76,6 +72,10 @@ const config = {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+      },
+      boxShadow: {
+        perfect:
+          '0 24px 24px -12px rgba(14, 63, 126, 0.04), 0 12px 12px -6px rgba(14, 63, 126, 0.04), 0 6px 6px -3px rgba(42, 51, 70, 0.04), 0 3px 3px -1.5px rgba(42, 51, 70, 0.04), 0 1px 1px -0.5px rgba(42, 51, 70, 0.04), 0 4px 4px 1px rgba(14, 63, 126, 0.04)',
       },
     },
   },

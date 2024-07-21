@@ -62,3 +62,26 @@ export const COLORS = [
 ];
 
 export const NUMBER_OF_CONCURRENT_IMAGE_GENERATION_REQUESTS = 3;
+
+export const STRINGS = [
+  'creativity',
+  'imagination',
+  'fun',
+  'adventure',
+  'discovery',
+  'exploration',
+  'inspiration',
+  'art',
+  'joy',
+  'learning',
+  'wonder',
+  'dreams',
+  'playtime',
+  'innovation',
+  'magic',
+  'curiosity',
+  'expression',
+  'fantasy',
+  'stories',
+  'excitement',
+];
