@@ -40,10 +40,12 @@
     "@fortawesome/pro-regular-svg-icons": "^6.5.2",
     "@fortawesome/pro-solid-svg-icons": "^6.5.2",
     "@fortawesome/react-fontawesome": "^0.2.0",
+    "@mailchimp/mailchimp_marketing": "^3.0.80",
     "@neondatabase/serverless": "^0.9.3",
     "@prisma/adapter-neon": "^5.14.0",
     "@prisma/client": "5.14.0",
     "@radix-ui/react-slot": "^1.0.2",
+    "@radix-ui/react-toast": "^1.2.1",
     "@react-pdf/renderer": "^3.4.4",
     "@sentry/nextjs": "^8",
     "@stripe/stripe-js": "^3.4.0",
@@ -73,6 +75,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@types/mailchimp__mailchimp_marketing": "^3.0.20",
     "@types/node": "^20.12.12",
     "@types/react": "^18",
     "@types/react-dom": "^18",

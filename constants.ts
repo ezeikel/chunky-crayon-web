@@ -63,7 +63,7 @@ export const COLORS = [
 
 export const NUMBER_OF_CONCURRENT_IMAGE_GENERATION_REQUESTS = 3;
 
-export const STRINGS = [
+export const UNLEASH_STRINGS = [
   'creativity',
   'imagination',
   'fun',

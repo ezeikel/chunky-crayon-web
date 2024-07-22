@@ -27,10 +27,6 @@ const CreateColoringPageForm = ({ className }: CreateColoringPageFormProps) => {
       </p>
       <form
         action={async (formData) => {
-          // DEBUG:
-          // eslint-disable-next-line no-console
-          console.log('Form data', formData);
-
           const rawFormData = {
             description: (formData.get('description') as string) || '',
           };
