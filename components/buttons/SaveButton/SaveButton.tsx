@@ -38,7 +38,7 @@ const SaveButton = ({ coloringImage, className }: SaveButtonProps) => {
       document={<ColoringPageDocument coloringImage={coloringImage} />}
       fileName={`${formatTitleForFileName(coloringImage.title)}-coloring-page.pdf`}
       className={cn(
-        'flex items-center justify-center gap-x-4 text-black font-semibold p-4 rounded-lg shadow-lg bg-white',
+        'flex items-center justify-center gap-x-4 text-black font-normal px-4 py-2 rounded-lg shadow-lg bg-white',
         {
           [className as string]: !!className,
         },

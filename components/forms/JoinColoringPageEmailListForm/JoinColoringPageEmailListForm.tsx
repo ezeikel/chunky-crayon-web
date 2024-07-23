@@ -5,14 +5,15 @@ import { track } from '@vercel/analytics';
 import SubmitButton from '@/components/buttons/SubmitButton/SubmitButton';
 import cn from '@/utils/cn';
 import { useToast } from '@/components/ui/use-toast';
+import { Input } from '@/components/ui/input';
 
-type JoinColouringPageEmailListFormProps = {
+type JoinColoringPageEmailListFormProps = {
   className?: string;
 };
 
-const JoinColouringPageEmailListForm = ({
+const JoinColoringPageEmailListForm = ({
   className,
-}: JoinColouringPageEmailListFormProps) => {
+}: JoinColoringPageEmailListFormProps) => {
   const formRef = useRef<HTMLFormElement>(null);
   const emailInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -24,8 +25,8 @@ const JoinColouringPageEmailListForm = ({
       })}
     >
       <p className="text-[#4B4B4B] text-base leading-5">
-        Drop your email to the receive one free colouring page in your inbox
-        every week.
+        Enter your email to receive a free coloring page in your inbox every
+        week.
       </p>
       <form
         action={async (formData) => {
@@ -54,7 +55,7 @@ const JoinColouringPageEmailListForm = ({
             });
 
             // track email list subscription
-            track('Signed up to colouring page email list', {
+            track('Signed up to coloring page email list', {
               email: rawFormData.email,
             });
 
@@ -77,20 +78,21 @@ const JoinColouringPageEmailListForm = ({
           [className as string]: !!className,
         })}
       >
-        <input
+        <Input
           type="email"
           name="email"
-          className="flex-1 border border-[#4B4B4B] rounded shadow-perfect py-2 px-4 placeholder:text-[#A6A6A6] placeholder:text-base"
-          placeholder="coco@melon.com"
+          className="flex-1 border border-[#4B4B4B] rounded shadow-perfect placeholder:text-[#A6A6A6] placeholder:text-base"
+          placeholder="thecoolparent@example.com"
           ref={emailInputRef}
+          required
         />
         <SubmitButton
           text="Join"
-          className="font-tondo text-[#FF8A65] bg-transparent hover:bg-[#FF8A65] hover:text-white border border-[#FF8A65] font-bold text-xl leading-6 shadow-perfect py-2 px-4"
+          className="font-tondo text-[#FF8A65] bg-transparent hover:bg-[#FF8A65] hover:text-white border border-[#FF8A65]"
         />
       </form>
     </div>
   );
 };
 
-export default JoinColouringPageEmailListForm;
+export default JoinColoringPageEmailListForm;
