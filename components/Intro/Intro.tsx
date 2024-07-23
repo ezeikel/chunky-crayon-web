@@ -15,10 +15,16 @@ const Intro = ({ className }: IntroProps) => {
         [className as string]: !!className,
       })}
     >
-      <h2 className="font-tondo font-bold text-[64px] leading-[79px] text-[#4B4B4B] mb-8 [white-space:pre-wrap] [word-break:break-word]">
+      <h2 className="font-tondo font-bold text-[64px] leading-none md:leading-tight text-[#4B4B4B] mb-8 [white-space:pre-wrap] [word-break:break-word]">
         <Balancer>
-          Unleash your child&apos;s <TypedText strings={UNLEASH_STRINGS} />
-          &nbsp;today
+          Unleash your child&apos;s
+          <br />
+          <TypedText
+            className="text-[#FF8A65]"
+            strings={UNLEASH_STRINGS}
+          />{' '}
+          <br />
+          today
         </Balancer>
       </h2>
       <p className="text-2xl text-[#A6A6A6] mb-8">
