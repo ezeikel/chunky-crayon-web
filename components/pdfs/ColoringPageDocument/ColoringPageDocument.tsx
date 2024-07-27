@@ -7,9 +7,20 @@ import {
   View,
   StyleSheet,
   Link,
+  Font,
 } from '@react-pdf/renderer';
 import SvgToReactPdf from '@/components/SvgToReactPdf/SvgToReactPdf';
 import fetchSvg from '@/utils/fetchSvg';
+
+Font.register({
+  family: 'Tondo Bold',
+  src: '/fonts/tondo-bold.ttf',
+});
+
+Font.register({
+  family: 'Rooney Sans',
+  src: '/fonts/rooney-sans-regular.ttf',
+});
 
 // create styles
 const styles = StyleSheet.create({
@@ -47,9 +58,11 @@ const styles = StyleSheet.create({
     maxWidth: '50%',
   },
   ctaText: {
+    fontFamily: 'Tondo Bold',
     fontSize: 18,
   },
   ctaLink: {
+    fontFamily: 'Rooney Sans',
     fontSize: 16,
   },
 });
