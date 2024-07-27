@@ -1,11 +1,13 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { track } from '@vercel/analytics';
 import SubmitButton from '@/components/buttons/SubmitButton/SubmitButton';
 import cn from '@/utils/cn';
 import { useToast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
+import { joinColoringPageEmailList } from '@/app/actions';
+import { useFormState } from 'react-dom';
 
 type JoinColoringPageEmailListFormProps = {
   className?: string;
@@ -14,9 +16,39 @@ type JoinColoringPageEmailListFormProps = {
 const JoinColoringPageEmailListForm = ({
   className,
 }: JoinColoringPageEmailListFormProps) => {
-  const formRef = useRef<HTMLFormElement>(null);
   const emailInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  // TODO: useFormState has been swapped out for useActionState in later canary versions
+  const [state, joinColoringPageEmailListAction] = useFormState(
+    joinColoringPageEmailList,
+    {
+      success: false,
+    },
+  );
+
+  useEffect(() => {
+    if (state.success) {
+      toast({
+        title: 'Success 🎉',
+        description: 'You have successfully joined the email list!',
+      });
+
+      track('Signed up to coloring page email list', {
+        email: state.email as string,
+      });
+
+      if (emailInputRef.current) {
+        emailInputRef.current.value = '';
+      }
+    } else if (state.error) {
+      toast({
+        title: 'Something went wrong 😢',
+        description: 'Failed to join the email list. Please try again.',
+      });
+
+      console.error({ error: state.error });
+    }
+  }, [state.success, state.error]);
 
   return (
     <div
@@ -30,51 +62,7 @@ const JoinColoringPageEmailListForm = ({
         page in your inbox every week.
       </p>
       <form
-        action={async (formData) => {
-          const rawFormData = {
-            email: (formData.get('email') as string) || '',
-          };
-
-          // add email to email list
-          try {
-            const response = await fetch('/api/email-list/subscribe', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(rawFormData),
-            });
-
-            if (!response.ok) {
-              throw new Error('Failed to subscribe to email list');
-            }
-
-            // show success toast
-            toast({
-              title: 'Success 🎉',
-              description: 'You have successfully joined the email list!',
-            });
-
-            // track email list subscription
-            track('Signed up to coloring page email list', {
-              email: rawFormData.email,
-            });
-
-            // reset form after submission
-            if (emailInputRef.current) {
-              emailInputRef.current.value = '';
-            }
-          } catch (error) {
-            // show error toast
-            toast({
-              title: 'Something went wrong 😢',
-              description: 'Failed to join the email list. Please try again.',
-            });
-
-            console.error({ error });
-          }
-        }}
-        ref={formRef}
+        action={joinColoringPageEmailListAction}
         className={cn('flex gap-x-8', {
           [className as string]: !!className,
         })}

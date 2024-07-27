@@ -1,11 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 
-import mailchimp from '@mailchimp/mailchimp_marketing';
-
-mailchimp.setConfig({
-  apiKey: process.env.MAILCHIMP_API_KEY,
-  server: process.env.MAILCHIMP_API_SERVER,
-});
+import { joinColoringPageEmailList } from '@/app/actions';
 
 export async function POST(request: Request) {
   const { email } = await request.json();
@@ -20,12 +15,14 @@ export async function POST(request: Request) {
   }
 
   try {
-    await mailchimp.lists.addListMember(
-      process.env.MAILCHIMP_AUDIENCE_ID as string,
+    const formData = new FormData();
+    formData.append('email', email);
+
+    await joinColoringPageEmailList(
       {
-        email_address: email,
-        status: 'subscribed',
+        success: false,
       },
+      formData,
     );
 
     return Response.json(

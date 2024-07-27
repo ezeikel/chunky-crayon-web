@@ -8,6 +8,7 @@ import OpenAI from 'openai';
 import QRCode from 'qrcode';
 import potrace from 'oslllo-potrace';
 import sharp from 'sharp';
+import mailchimp from '@mailchimp/mailchimp_marketing';
 import {
   MAX_IMAGE_GENERATION_ATTEMPTS,
   NUMBER_OF_CONCURRENT_IMAGE_GENERATION_REQUESTS,
@@ -18,6 +19,11 @@ import { ColoringImage } from '@prisma/client';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
+});
+
+mailchimp.setConfig({
+  apiKey: process.env.MAILCHIMP_API_KEY,
+  server: process.env.MAILCHIMP_API_SERVER,
 });
 
 // generate coloring image from openai based on text/audio/image description
@@ -384,3 +390,41 @@ export const getAllColoringImages = async () =>
       createdAt: 'desc',
     },
   });
+
+type JoinColoringPageEmailListState = {
+  success: boolean;
+  error?: unknown;
+  email?: string;
+};
+
+export const joinColoringPageEmailList = async (
+  previousState: JoinColoringPageEmailListState,
+  formData: FormData,
+): Promise<JoinColoringPageEmailListState> => {
+  const rawFormData = {
+    email: (formData.get('email') as string) || '',
+  };
+
+  try {
+    await mailchimp.lists.addListMember(
+      // process.env.MAILCHIMP_AUDIENCE_ID as string,
+      '52c8855495',
+      {
+        email_address: rawFormData.email,
+        status: 'subscribed',
+      },
+    );
+
+    return {
+      success: true,
+      email: rawFormData.email,
+    };
+  } catch (error) {
+    console.error({ mailchimpError: error });
+
+    return {
+      error: 'Failed to add email to mailchimp list',
+      success: false,
+    };
+  }
+};
