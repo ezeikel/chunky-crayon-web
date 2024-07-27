@@ -61,7 +61,7 @@ export default function RootLayout({
       </head>
       <body
         className={cn(
-          'font-rooney-sans antialiased',
+          'font-rooney-sans antialiased relative',
           tondo.variable,
           rooneySans.variable,
         )}
