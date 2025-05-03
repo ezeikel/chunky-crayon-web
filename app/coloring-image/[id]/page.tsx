@@ -2,7 +2,12 @@ import { getAllColoringImages, getColoringImage } from '@/app/actions';
 import ColorPalette from '@/components/ColorPalette/ColorPalette';
 import ImageCanvas from '@/components/ImageCanvas/ImageCanvas';
 import PageWrap from '@/components/PageWrap/PageWrap';
-import SaveButton from '@/components/buttons/SaveButton/SaveButton';
+import dynamic from 'next/dynamic';
+
+const DownloadPDFButton = dynamic(
+  () => import('@/components/buttons/DownloadPDFButton/DownloadPDFButton'),
+  { ssr: false },
+);
 
 type ColoringImagePageProps = {
   params: {
@@ -102,7 +107,10 @@ const ColoringImagePage = async ({
             coloringImage={coloringImage}
             className="rounded-lg shadow-lg bg-white overflow-hidden"
           />
-          <SaveButton coloringImage={coloringImage} className="self-center" />
+          <DownloadPDFButton
+            coloringImage={coloringImage}
+            className="self-center"
+          />
         </div>
       </div>
     </PageWrap>

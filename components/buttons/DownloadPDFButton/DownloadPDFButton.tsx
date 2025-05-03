@@ -21,7 +21,7 @@ type SaveButtonProps = {
   className?: string;
 };
 
-const SaveButton = ({ coloringImage, className }: SaveButtonProps) => {
+const DownloadPDFButton = ({ coloringImage, className }: SaveButtonProps) => {
   const [instance] = usePDF({
     document: <ColoringPageDocument coloringImage={coloringImage} />,
   });
@@ -86,4 +86,4 @@ const SaveButton = ({ coloringImage, className }: SaveButtonProps) => {
   );
 };
 
-export default SaveButton;
+export default DownloadPDFButton;
