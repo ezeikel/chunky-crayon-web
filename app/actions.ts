@@ -9,13 +9,19 @@ import QRCode from 'qrcode';
 import potrace from 'oslllo-potrace';
 import sharp from 'sharp';
 import mailchimp from '@mailchimp/mailchimp_marketing';
+import { Resend } from 'resend';
+import { Readable } from 'stream';
 import {
   MAX_IMAGE_GENERATION_ATTEMPTS,
   NUMBER_OF_CONCURRENT_IMAGE_GENERATION_REQUESTS,
   REFERENCE_IMAGES,
 } from '@/constants';
 import prisma from '@/lib/prisma';
-import { ColoringImage } from '@prisma/client';
+import { ColoringImage, GenerationType } from '@prisma/client';
+import { getRandomDescription } from '@/utils/random';
+import generatePDFNode from '@/utils/generatePDFNode';
+import streamToBuffer from '@/utils/streamToBuffer';
+import fetchSvg from '@/utils/fetchSvg';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -25,6 +31,8 @@ mailchimp.setConfig({
   apiKey: process.env.MAILCHIMP_API_KEY,
   server: process.env.MAILCHIMP_API_SERVER,
 });
+
+const resend = new Resend(process.env.RESEND_API_KEY as string);
 
 // generate coloring image from openai based on text/audio/image description
 const generateColoringImage = async (description: string) => {
@@ -41,7 +49,9 @@ const generateColoringImage = async (description: string) => {
   // eslint-disable-next-line no-console
   console.log('generateColoringImage response', response);
 
-  const { url, revised_prompt: revisedPrompt } = response.data[0];
+  const { url, revised_prompt: revisedPrompt } = (
+    response.data as { url: string; revised_prompt: string }[]
+  )[0];
 
   return {
     url,
@@ -73,9 +83,43 @@ const cleanUpDescription = async (roughUserDescription: string) => {
   return response.choices[0].message.content;
 };
 
+const sendEmail = async ({
+  to,
+  coloringImagePdf,
+  generationType,
+}: EmailData) => {
+  const date = new Date();
+  const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+  const day = date.getDate();
+  const month = date.toLocaleDateString('en-US', { month: 'short' });
+
+  const typeMap: Record<GenerationType, string> = {
+    [GenerationType.DAILY]: 'Daily',
+    [GenerationType.WEEKLY]: 'Weekly',
+    [GenerationType.MONTHLY]: 'Monthly',
+    [GenerationType.USER]: 'Custom',
+  };
+
+  return resend.emails.send({
+    from: 'Chunky Crayon <no-reply@chunkycrayon.com>',
+    to,
+    subject: `${typeMap[generationType]} Coloring Image for ${dayName} ${day} ${month}`,
+    text: 'Please find attached the coloring image for today',
+    attachments: [
+      {
+        filename: `${typeMap[generationType].toLowerCase()}-coloring-image-${dayName}-${day}-${month}.pdf`,
+        content: coloringImagePdf,
+      },
+    ],
+  });
+};
+
+// TODO: improve this!
 export const createColoringImage = async (formData: FormData) => {
   const rawFormData = {
     description: (formData.get('description') as string) || '',
+    generationType:
+      (formData.get('generationType') as GenerationType) || undefined,
   };
 
   // this is initially the user's description but can be updated based on the feedback from gpt-4o
@@ -277,6 +321,7 @@ export const createColoringImage = async (formData: FormData) => {
       description: generateImageMetadataResponseContent.description,
       alt: generateImageMetadataResponseContent.alt,
       tags: generateImageMetadataResponseContent.tags,
+      generationType: rawFormData.generationType || GenerationType.USER,
     },
   });
 
@@ -345,7 +390,7 @@ export const createColoringImage = async (formData: FormData) => {
   ]);
 
   // update coloringImage in db with qr code url
-  await prisma.coloringImage.update({
+  const updatedColoringImage = await prisma.coloringImage.update({
     where: {
       id: coloringImage.id,
     },
@@ -358,7 +403,7 @@ export const createColoringImage = async (formData: FormData) => {
 
   revalidatePath('/');
 
-  return coloringImage;
+  return updatedColoringImage;
 };
 
 export const getColoringImage = async (
@@ -427,4 +472,81 @@ export const joinColoringPageEmailList = async (
       success: false,
     };
   }
+};
+
+export const getMailchimpAudienceMembers = async () => {
+  const response = await mailchimp.lists.getListMembersInfo(
+    // process.env.MAILCHIMP_AUDIENCE_ID as string,
+    '52c8855495',
+  );
+
+  if ('members' in response) {
+    return response.members;
+  }
+
+  throw new Error('Failed to get Mailchimp audience members');
+};
+
+export const generateRandomColoringImage = async (
+  generationType: GenerationType,
+): Promise<Partial<ColoringImage>> => {
+  const description = getRandomDescription();
+
+  const formData = new FormData();
+
+  formData.append('description', description);
+  formData.append('generationType', generationType);
+
+  const coloringImage = await createColoringImage(formData);
+
+  if (!coloringImage) {
+    throw new Error(
+      `Error generating ${generationType.toLowerCase()} coloring image`,
+    );
+  }
+
+  const imageSvg = await fetchSvg(coloringImage.svgUrl as string);
+  const qrCodeSvg = await fetchSvg(coloringImage.qrCodeUrl as string);
+
+  const pdfStream = await generatePDFNode(coloringImage, imageSvg, qrCodeSvg);
+
+  // convert PDF stream to buffer
+  const pdfBuffer = await streamToBuffer(pdfStream as Readable);
+
+  // get list of emails from mailchimp
+  const members = await getMailchimpAudienceMembers();
+  const emails: string[] = members.map(
+    (member: { email_address: string }) => member.email_address,
+  );
+
+  // send email to all emails in the list with the coloring image as an attachment pdf
+  await Promise.all(
+    emails.map((email) =>
+      sendEmail({
+        to: email,
+        coloringImagePdf: pdfBuffer,
+        generationType,
+      }),
+    ),
+  );
+
+  return coloringImage;
+};
+
+type EmailData = {
+  to: string;
+  coloringImagePdf: Buffer;
+  generationType: GenerationType;
+};
+
+export const generateColoringImageOfTheDay = async () => {
+  return generateRandomColoringImage(GenerationType.DAILY);
+};
+
+export const generateColoringImageOfTheWeek = async () => {
+  return generateRandomColoringImage(GenerationType.WEEKLY);
+};
+
+export const generateColoringImageOfTheMonth = async () => {
+  return generateRandomColoringImage(GenerationType.MONTHLY);
 };

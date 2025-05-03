@@ -1,27 +1,20 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { track } from '@vercel/analytics';
 import { ColoringImage } from '@prisma/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileArrowDown } from '@fortawesome/pro-regular-svg-icons';
 import ColoringPageDocument from '@/components/pdfs/ColoringPageDocument/ColoringPageDocument';
 import cn from '@/utils/cn';
+import { usePDF } from '@react-pdf/renderer';
 
-const PDFDownloadLink = dynamic(
-  () => import('@react-pdf/renderer').then((mod) => mod.PDFDownloadLink),
-  {
-    ssr: false,
-  },
-);
-
-function formatTitleForFileName(title: string | undefined): string {
+const formatTitleForFileName = (title: string | undefined): string => {
   if (!title) {
     return 'chunky-crayon';
   }
 
   return `${title.toLowerCase().replace(/\s+/g, '-')}-coloring-page.pdf`;
-}
+};
 
 type SaveButtonProps = {
   coloringImage: Partial<ColoringImage>;
@@ -29,46 +22,67 @@ type SaveButtonProps = {
 };
 
 const SaveButton = ({ coloringImage, className }: SaveButtonProps) => {
+  const [instance] = usePDF({
+    document: <ColoringPageDocument coloringImage={coloringImage} />,
+  });
+
   if (!coloringImage) {
     return null;
   }
 
+  if (instance.loading) {
+    return (
+      <button
+        className={cn(
+          'flex items-center justify-center gap-x-4 text-black font-normal px-4 py-2 rounded-lg shadow-lg bg-white',
+          {
+            [className as string]: !!className,
+          },
+        )}
+        disabled
+        type="button"
+      >
+        Loading...
+      </button>
+    );
+  }
+
+  if (instance.error) {
+    return (
+      <button
+        className={cn(
+          'flex items-center justify-center gap-x-4 text-black font-normal px-4 py-2 rounded-lg shadow-lg bg-white',
+          {
+            [className as string]: !!className,
+          },
+        )}
+        disabled
+        type="button"
+      >
+        Error
+      </button>
+    );
+  }
+
   return (
-    <PDFDownloadLink
-      document={<ColoringPageDocument coloringImage={coloringImage} />}
-      fileName={`${formatTitleForFileName(coloringImage.title)}-coloring-page.pdf`}
+    <a
+      href={instance.url || '#'}
+      download={formatTitleForFileName(coloringImage.title)}
       className={cn(
         'flex items-center justify-center gap-x-4 text-black font-normal px-4 py-2 rounded-lg shadow-lg bg-white',
         {
           [className as string]: !!className,
         },
       )}
-      onClick={async () =>
+      onClick={() =>
         track('Clicked save coloring image', {
           id: coloringImage.id as string,
         })
       }
     >
-      {({ loading, error }) => {
-        if (loading) {
-          return 'Loading...';
-        }
-
-        if (error) {
-          return 'Error';
-        }
-
-        return (
-          <>
-            Download PDF
-            <FontAwesomeIcon
-              icon={faFileArrowDown}
-              className="text-3xl text-black"
-            />
-          </>
-        );
-      }}
-    </PDFDownloadLink>
+      Download PDF
+      <FontAwesomeIcon icon={faFileArrowDown} className="text-3xl text-black" />
+    </a>
   );
 };
 

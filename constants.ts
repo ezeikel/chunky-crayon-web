@@ -61,7 +61,7 @@ export const COLORS = [
   '#FFFFFF',
 ];
 
-export const NUMBER_OF_CONCURRENT_IMAGE_GENERATION_REQUESTS = 3;
+export const NUMBER_OF_CONCURRENT_IMAGE_GENERATION_REQUESTS = 1;
 
 export const UNLEASH_STRINGS = [
   'creativity',
@@ -85,3 +85,23 @@ export const UNLEASH_STRINGS = [
   'stories',
   'excitement',
 ];
+
+export const SETTINGS = ['forest', 'beach', 'city', 'mountain', 'space'];
+
+export const CHARACTERS = [
+  'dragon',
+  'unicorn',
+  'knight',
+  'astronaut',
+  'pirate',
+];
+
+export const ACTIVITIES = [
+  'dancing',
+  'reading',
+  'playing',
+  'exploring',
+  'fighting',
+];
+
+export const LOCATIONS = ['castle', 'ship', 'cave', 'alien planet', 'desert'];

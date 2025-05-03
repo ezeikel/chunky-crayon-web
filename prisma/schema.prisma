@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
@@ -11,21 +5,29 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+enum GenerationType {
+  USER
+  DAILY
+  WEEKLY
+  MONTHLY
 }
 
 model ColoringImage {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  alt         String
-  url         String?
-  svgUrl      String?
-  qrCodeUrl   String?
-  tags        String[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String         @id @default(cuid())
+  title          String
+  description    String
+  alt            String
+  url            String?
+  svgUrl         String?
+  qrCodeUrl      String?
+  tags           String[]
+  generationType GenerationType @default(USER)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
   @@map("coloring_images")
 }
