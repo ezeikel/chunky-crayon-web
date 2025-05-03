@@ -1,8 +1,15 @@
 import { withSentryConfig } from '@sentry/nextjs';
 import { withPlausibleProxy } from 'next-plausible';
+import type { NextConfig } from 'next';
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+// extend NextConfig to include serverExternalPackages experimental feature
+type ExtendedNextConfig = NextConfig & {
+  experimental: NextConfig['experimental'] & {
+    serverExternalPackages?: string[];
+  };
+};
+
+const nextConfig: ExtendedNextConfig = {
   images: {
     remotePatterns: [
       {
@@ -18,7 +25,7 @@ const nextConfig = {
     ],
   },
   experimental: {
-    serverComponentsExternalPackages: ['@react-pdf/renderer'],
+    serverExternalPackages: ['@react-pdf/renderer'],
   },
 };
 

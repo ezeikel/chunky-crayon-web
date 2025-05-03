@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useActionState } from 'react';
 import { track } from '@vercel/analytics';
 import SubmitButton from '@/components/buttons/SubmitButton/SubmitButton';
 import cn from '@/utils/cn';
 import { useToast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
 import { joinColoringPageEmailList } from '@/app/actions';
-import { useFormState } from 'react-dom';
 
 type JoinColoringPageEmailListFormProps = {
   className?: string;
@@ -19,7 +18,7 @@ const JoinColoringPageEmailListForm = ({
   const emailInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   // TODO: useFormState has been swapped out for useActionState in later canary versions
-  const [state, joinColoringPageEmailListAction] = useFormState(
+  const [state, joinColoringPageEmailListAction] = useActionState(
     joinColoringPageEmailList,
     {
       success: false,

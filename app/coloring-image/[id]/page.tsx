@@ -2,17 +2,12 @@ import { getAllColoringImages, getColoringImage } from '@/app/actions';
 import ColorPalette from '@/components/ColorPalette/ColorPalette';
 import ImageCanvas from '@/components/ImageCanvas/ImageCanvas';
 import PageWrap from '@/components/PageWrap/PageWrap';
-import dynamic from 'next/dynamic';
-
-const DownloadPDFButton = dynamic(
-  () => import('@/components/buttons/DownloadPDFButton/DownloadPDFButton'),
-  { ssr: false },
-);
+import DownloadPDFButton from '@/components/buttons/DownloadPDFButton/DownloadPDFButton';
 
 type ColoringImagePageProps = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export const generateStaticParams = async () => {
@@ -25,9 +20,9 @@ export const generateStaticParams = async () => {
   }));
 };
 
-export const generateMetadata = async ({
-  params: { id },
-}: ColoringImagePageProps) => {
+export const generateMetadata = async (props: ColoringImagePageProps) => {
+  const params = await props.params;
+  const { id } = params;
   const coloringImage = await getColoringImage(id);
 
   if (!coloringImage) {
@@ -81,9 +76,10 @@ export const generateMetadata = async ({
   };
 };
 
-const ColoringImagePage = async ({
-  params: { id },
-}: ColoringImagePageProps) => {
+const ColoringImagePage = async (props: ColoringImagePageProps) => {
+  const { params } = props;
+  const { id } = await params;
+
   const coloringImage = await getColoringImage(id);
 
   if (!coloringImage) {

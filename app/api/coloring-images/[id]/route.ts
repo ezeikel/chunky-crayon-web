@@ -4,8 +4,9 @@ import { getColoringImage } from '@/app/actions';
 
 export const GET = async (
   request: Request,
-  { params }: { params: { id: string } },
+  props: { params: Promise<{ id: string }> },
 ) => {
+  const params = await props.params;
   const { id } = params;
 
   return Response.json(

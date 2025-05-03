@@ -7,6 +7,7 @@ import { faFileArrowDown } from '@fortawesome/pro-regular-svg-icons';
 import ColoringPageDocument from '@/components/pdfs/ColoringPageDocument/ColoringPageDocument';
 import cn from '@/utils/cn';
 import { usePDF } from '@react-pdf/renderer';
+import dynamic from 'next/dynamic';
 
 const formatTitleForFileName = (title: string | undefined): string => {
   if (!title) {
@@ -21,7 +22,10 @@ type SaveButtonProps = {
   className?: string;
 };
 
-const DownloadPDFButton = ({ coloringImage, className }: SaveButtonProps) => {
+const DownloadPDFButtonContent = ({
+  coloringImage,
+  className,
+}: SaveButtonProps) => {
   const [instance] = usePDF({
     document: <ColoringPageDocument coloringImage={coloringImage} />,
   });
@@ -85,5 +89,11 @@ const DownloadPDFButton = ({ coloringImage, className }: SaveButtonProps) => {
     </a>
   );
 };
+
+// @react-pdf/renderer uses browser APIs during render, so we need to prevent server-side rendering
+const DownloadPDFButton = dynamic(
+  () => Promise.resolve(DownloadPDFButtonContent),
+  { ssr: false },
+);
 
 export default DownloadPDFButton;
