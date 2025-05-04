@@ -3,9 +3,8 @@ import PageWrap from '@/components/PageWrap/PageWrap';
 import CreateColoringPageForm from '@/components/forms/CreateColoringPageForm/CreateColoringPageForm';
 import AllColoringPageImages from '@/components/AllColoringPageImages/AllColoringPageImages';
 import Intro from '@/components/Intro/Intro';
-import { MAX_IMAGE_GENERATION_TIME } from '@/constants';
 
-export const maxDuration = MAX_IMAGE_GENERATION_TIME;
+export const maxDuration = 150;
 
 // FIX: stop 14px fonts for inputs from zooming in on focus on iOS
 export const viewport: Viewport = {

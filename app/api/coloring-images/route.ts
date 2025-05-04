@@ -1,7 +1,6 @@
 import { getAllColoringImages, createColoringImage } from '@/app/actions';
-import { MAX_IMAGE_GENERATION_TIME } from '@/constants';
 
-export const maxDuration = MAX_IMAGE_GENERATION_TIME;
+export const maxDuration = 150;
 
 export const GET = async () =>
   Response.json(

@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
 import { GenerationType } from '@prisma/client';
 import { generateRandomColoringImage } from '@/app/actions';
-import { MAX_IMAGE_GENERATION_TIME } from '@/constants';
 
 export const dynamic = 'force-dynamic';
 
-export const maxDuration = MAX_IMAGE_GENERATION_TIME;
+export const maxDuration = 150;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
