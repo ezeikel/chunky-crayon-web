@@ -2,7 +2,7 @@
 
 import { joinColoringPageEmailList } from '@/app/actions';
 
-export async function POST(request: Request) {
+export const POST = async (request: Request) => {
   const { email } = await request.json();
 
   if (!email) {
@@ -10,6 +10,11 @@ export async function POST(request: Request) {
       { error: 'Email is required' },
       {
         status: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
       },
     );
   }
@@ -36,7 +41,12 @@ export async function POST(request: Request) {
       { error: 'Failed to add to the list', details: error },
       {
         status: 500,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
       },
     );
   }
-}
+};
