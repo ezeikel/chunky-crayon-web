@@ -6,17 +6,6 @@ import { GenerationType } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
-export const OPTIONS = async () => {
-  return new NextResponse(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
-  });
-};
-
 export const POST = async () => {
   try {
     const coloringImage = await generateRandomColoringImage(
@@ -28,7 +17,7 @@ export const POST = async () => {
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         },
       },
     );
@@ -41,7 +30,7 @@ export const POST = async () => {
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         },
       },
     );
