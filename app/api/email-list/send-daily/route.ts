@@ -4,6 +4,19 @@ import { NextResponse } from 'next/server';
 import { generateRandomColoringImage } from '@/app/actions';
 import { GenerationType } from '@prisma/client';
 
+export const dynamic = 'force-dynamic';
+
+export const OPTIONS = async () => {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  });
+};
+
 export const POST = async () => {
   try {
     const coloringImage = await generateRandomColoringImage(
