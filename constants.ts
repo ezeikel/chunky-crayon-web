@@ -105,3 +105,5 @@ export const ACTIVITIES = [
 ];
 
 export const LOCATIONS = ['castle', 'ship', 'cave', 'alien planet', 'desert'];
+
+export const MAX_IMAGE_GENERATION_TIME = 150;

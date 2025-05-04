@@ -1,8 +1,11 @@
-/* eslint-disable import/prefer-default-export */
-
 import { NextResponse } from 'next/server';
-import { generateRandomColoringImage } from '@/app/actions';
 import { GenerationType } from '@prisma/client';
+import { generateRandomColoringImage } from '@/app/actions';
+import { MAX_IMAGE_GENERATION_TIME } from '@/constants';
+
+export const dynamic = 'force-dynamic';
+
+export const maxDuration = MAX_IMAGE_GENERATION_TIME;
 
 export const POST = async () => {
   try {

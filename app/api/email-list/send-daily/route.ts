@@ -1,10 +1,17 @@
-/* eslint-disable import/prefer-default-export */
-
 import { NextResponse } from 'next/server';
-import { generateRandomColoringImage } from '@/app/actions';
 import { GenerationType } from '@prisma/client';
+import { generateRandomColoringImage } from '@/app/actions';
+import { MAX_IMAGE_GENERATION_TIME } from '@/constants';
 
 export const dynamic = 'force-dynamic';
+
+export const maxDuration = MAX_IMAGE_GENERATION_TIME;
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
 
 export const POST = async () => {
   try {
@@ -14,11 +21,7 @@ export const POST = async () => {
     return NextResponse.json(
       { success: true, coloringImage },
       {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        },
+        headers: corsHeaders,
       },
     );
   } catch (error) {
@@ -27,11 +30,7 @@ export const POST = async () => {
       { error: 'Failed to generate daily email' },
       {
         status: 500,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        },
+        headers: corsHeaders,
       },
     );
   }
