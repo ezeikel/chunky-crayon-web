@@ -6,7 +6,13 @@ export const dynamic = 'force-dynamic';
 
 export const maxDuration = 150;
 
-export const POST = async () => {
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+const handleRequest = async () => {
   try {
     const coloringImage = await generateRandomColoringImage(
       GenerationType.MONTHLY,
@@ -14,11 +20,7 @@ export const POST = async () => {
     return NextResponse.json(
       { success: true, coloringImage },
       {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        },
+        headers: corsHeaders,
       },
     );
   } catch (error) {
@@ -27,12 +29,12 @@ export const POST = async () => {
       { error: 'Failed to generate monthly email' },
       {
         status: 500,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        },
+        headers: corsHeaders,
       },
     );
   }
 };
+
+// vercel Cron Jobs only work with GET requests
+export const GET = handleRequest;
+export const POST = handleRequest;

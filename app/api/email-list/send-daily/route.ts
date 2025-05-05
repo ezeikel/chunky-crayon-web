@@ -8,11 +8,11 @@ export const maxDuration = 150;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-export const POST = async () => {
+const handleRequest = async () => {
   try {
     const coloringImage = await generateRandomColoringImage(
       GenerationType.DAILY,
@@ -34,3 +34,7 @@ export const POST = async () => {
     );
   }
 };
+
+// vercel Cron Jobs only work with GET requests
+export const GET = handleRequest;
+export const POST = handleRequest;
