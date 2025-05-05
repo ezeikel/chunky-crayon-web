@@ -1,10 +1,8 @@
 'use server';
 
-import { put } from '@vercel/blob';
-import { track } from '@vercel/analytics/server';
+import { put, del } from '@vercel/blob';
 import { revalidatePath } from 'next/cache';
 import OpenAI from 'openai';
-// import { ChatCompletionContentPart } from 'openai/resources/index';
 import QRCode from 'qrcode';
 import potrace from 'oslllo-potrace';
 import sharp from 'sharp';
@@ -12,8 +10,8 @@ import mailchimp from '@mailchimp/mailchimp_marketing';
 import { Resend } from 'resend';
 import { Readable } from 'stream';
 import {
-  MAX_IMAGE_GENERATION_ATTEMPTS,
-  NUMBER_OF_CONCURRENT_IMAGE_GENERATION_REQUESTS,
+  OPENAI_MODEL_GPT_4O,
+  OPENAI_MODEL_GPT_IMAGE_OPTIONS,
   REFERENCE_IMAGES,
 } from '@/constants';
 import prisma from '@/lib/prisma';
@@ -37,32 +35,44 @@ const resend = new Resend(process.env.RESEND_API_KEY as string);
 // generate coloring image from openai based on text/audio/image description
 const generateColoringImage = async (description: string) => {
   const response = await openai.images.generate({
-    model: 'dall-e-3',
+    ...OPENAI_MODEL_GPT_IMAGE_OPTIONS,
     prompt: `${description}. The image should be in cartoon style with thick lines, low detail, no color, no shading, and no fill. Only black lines should be used. Ensure no extraneous elements such as additional shapes or artifacts are included. Refer to the style of the provided reference images: ${REFERENCE_IMAGES.join(', ')}`,
-    n: 1,
-    size: '1024x1024',
-    style: 'natural',
-    quality: 'hd',
   });
 
   // DEBUG:
   // eslint-disable-next-line no-console
   console.log('generateColoringImage response', response);
 
-  const { url, revised_prompt: revisedPrompt } = (
-    response.data as { url: string; revised_prompt: string }[]
+  const { b64_json: base64Image } = (
+    response.data as { b64_json: string }[]
   )[0];
 
-  return {
-    url,
-    revisedPrompt,
-  };
+  // convert base64 to buffer for storage
+  const imageBuffer = Buffer.from(base64Image, 'base64');
+
+  // generate a unique temporary filename
+  const tempFileName = `temp/${Date.now()}-${Math.random().toString(36).substring(2)}.png`;
+
+  try {
+    // save the image to blob storage temporarily
+    const { url } = await put(tempFileName, imageBuffer, {
+      access: 'public',
+    });
+
+    return {
+      url,
+      tempFileName,
+    };
+  } catch (error) {
+    console.error('Error saving temporary image:', error);
+    throw error;
+  }
 };
 
 // generate an appropriate prompt for the coloring image
 const cleanUpDescription = async (roughUserDescription: string) => {
   const response = await openai.chat.completions.create({
-    model: 'gpt-4o',
+    model: OPENAI_MODEL_GPT_4O,
     messages: [
       {
         role: 'system',
@@ -114,7 +124,6 @@ const sendEmail = async ({
   });
 };
 
-// TODO: improve this!
 export const createColoringImage = async (formData: FormData) => {
   const rawFormData = {
     description: (formData.get('description') as string) || '',
@@ -122,163 +131,26 @@ export const createColoringImage = async (formData: FormData) => {
       (formData.get('generationType') as GenerationType) || undefined,
   };
 
-  // this is initially the user's description but can be updated based on the feedback from gpt-4o
-  let userDescription = rawFormData.description;
-  let imageUrl;
+  // Clean up the user's description
+  const cleanedUpUserDescription = await cleanUpDescription(
+    rawFormData.description,
+  );
 
-  // keep track of all generated images
-  const allGeneratedImages: {
-    url?: string;
-    revisedPrompt?: string;
-  }[] = [];
+  // DEBUG:
+  // eslint-disable-next-line no-console
+  console.log('cleanedUpUserDescription', cleanedUpUserDescription);
 
-  // TODO: simplify the prompt as the attempt number increases
-  // eslint-disable-next-line no-plusplus
-  for (let attempt = 0; attempt < MAX_IMAGE_GENERATION_ATTEMPTS; attempt++) {
-    // eslint-disable-next-line no-await-in-loop
-    const cleanedUpUserDescription = await cleanUpDescription(userDescription);
-    // eslint-disable-next-line no-console
-    console.log('cleanedUpUserDescription', cleanedUpUserDescription);
-
-    // generate images concurrently to speed up the process
-    const generateImagePromises = Array.from(
-      { length: NUMBER_OF_CONCURRENT_IMAGE_GENERATION_REQUESTS },
-      // eslint-disable-next-line @typescript-eslint/no-loop-func
-      () => generateColoringImage(cleanedUpUserDescription as string),
-    );
-
-    // eslint-disable-next-line no-await-in-loop
-    const generatedImages = await Promise.all(generateImagePromises);
-
-    // add generated image to the list of generated images
-    allGeneratedImages.push(...generatedImages);
-
-    // DEBUG:
-    // eslint-disable-next-line no-console
-    console.log(
-      'imageUrls',
-      generatedImages.map((genImage) => genImage.url).join(', '),
-    );
-
-    // ask gpt-4o if the image is satisfactory
-    // eslint-disable-next-line no-await-in-loop
-    const checkImageAcceptanceResponse = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      response_format: { type: 'json_object' },
-      messages: [
-        {
-          role: 'system',
-          content: `You are an assistant that helps determine if images match the user's description and the specified rules for generating coloring book images. The image should be in cartoon style with thick lines, low detail, no color, no shading, and no fill. Only black lines should be used. Provide a response as a JSON object with 'results', 'selectedImageUrl' and 'prompt' keys. 'results' should be an array of objects with each object representing the result of each of the ${NUMBER_OF_CONCURRENT_IMAGE_GENERATION_REQUESTS} images. The objects in the 'results' array should have 'accepted' and 'reason' keys. If the image is accepted, set 'accepted' to true, 'reason' to the explanation. If an image is not accepted, set 'accepted' to false, 'reason' to the explanation. If no images are accepted provide a refined prompt to generate an improved image under the 'prompt' property. If more than one image is accepted make a judgement call of which of the images fits the criteria the most and set its url as the 'selectedImageUrl. Ensure any accepted images do not contain any extraneous elements or artifacts.`,
-        },
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: `Does any of the following images: ${generatedImages.map((genImage) => genImage.url).join(', ')} match the description and rules set out in the prompt: "${cleanedUpUserDescription}"?`,
-            },
-            // TODO: chatgpt doesn't seem to like the images being sent as an array of type image_url so appending to the text
-            // ...generatedImages.map((image) => ({
-            //   type: 'image_url',
-            //   image_url: {
-            //     url: image.url as string,
-            //   },
-            // })),
-          ],
-        },
-      ],
-    });
-
-    const checkImageAcceptanceResponseContent = JSON.parse(
-      checkImageAcceptanceResponse.choices[0].message.content as string,
-    );
-
-    // DEBUG:
-    // eslint-disable-next-line no-console
-    console.log(
-      'checkImageAcceptanceResponseContent',
-      checkImageAcceptanceResponseContent,
-    );
-
-    // if an image is accepted, set imageUrl to the selected image
-    if (checkImageAcceptanceResponseContent.selectedImageUrl) {
-      imageUrl = checkImageAcceptanceResponseContent.selectedImageUrl;
-      break;
-    }
-
-    // if no image is accepted, update the user description based on the refined prompt
-    userDescription = checkImageAcceptanceResponseContent.prompt;
-
-    // DEBUG:
-    // eslint-disable-next-line no-console
-    console.log('allGeneratedImages', allGeneratedImages);
-
-    // check if we have reached the maximum number of attempts
-    if (attempt === MAX_IMAGE_GENERATION_ATTEMPTS - 1) {
-      console.error('Failed to generate an acceptable image.');
-
-      // ask gpt-4o to select the best image from the generated images
-      // eslint-disable-next-line no-await-in-loop
-      const chooseBestImageResponse = await openai.chat.completions.create({
-        model: 'gpt-4o',
-        response_format: { type: 'json_object' },
-        messages: [
-          {
-            role: 'system',
-            content: `You are an assistant that helps determine the best image from a list of generated images. The images should be in cartoon style with thick lines, low detail, no color, no shading, and no fill. Only black lines should be used. Provide a response as a JSON object with an 'imageUrl' key and a 'reason' key. Set 'imageUrl' to the URL of the best image based on the user's description: "${cleanedUpUserDescription}". Set 'reason' to the explanation for why the image was chosen.`,
-          },
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: `Based on the following images, select the best one: ${allGeneratedImages.map((generatedImage) => generatedImage.url).join(', ')}`,
-              },
-              // TODO: chatgpt doesn't seem to like the images being sent as an array of type image_url so appending to the text
-              // ...generatedImages.map(
-              //   (generatedImage) =>
-              //     ({
-              //       type: 'image_url',
-              //       image_url: {
-              //         url: generatedImage.url,
-              //       },
-              //     }) as ChatCompletionContentPart,
-              // ),
-            ],
-          },
-        ],
-      });
-
-      // DEBUG:
-      // eslint-disable-next-line no-console
-      console.log(
-        'chooseBestImageResponse gpt-4o message: ',
-        JSON.stringify(chooseBestImageResponse.choices[0].message, null, 2),
-      );
-
-      imageUrl = JSON.parse(
-        chooseBestImageResponse.choices[0].message.content as string,
-      ).imageUrl;
-    }
-
-    // if no suitable image was generated, track the generated images and what chatgpt deemed as the most suitable image
-    track(
-      `Failed to generate an acceptable image within ${MAX_IMAGE_GENERATION_ATTEMPTS} attempts.`,
-      {
-        generatedImages: allGeneratedImages
-          .map((generatedImage) => generatedImage.url)
-          .join(', '),
-        selectedImage: `Selected image is: ${imageUrl}. Reason is ${checkImageAcceptanceResponseContent.reason}`,
-      },
-    );
-  }
+  // Generate the coloring image
+  const { url: imageUrl, tempFileName } = await generateColoringImage(
+    cleanedUpUserDescription as string,
+  );
 
   if (!imageUrl) {
     throw new Error('Failed to generate an acceptable image');
   }
 
   const generateImageMetadataResponse = await openai.chat.completions.create({
-    model: 'gpt-4o',
+    model: OPENAI_MODEL_GPT_4O,
     response_format: { type: 'json_object' },
     messages: [
       {
@@ -344,15 +216,11 @@ export const createColoringImage = async (formData: FormData) => {
     return new Promise((resolve, reject) => {
       sharp(buffer)
         .toFormat('png')
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         .toBuffer(async (err, pngBuffer) => {
           if (err) {
             reject(err);
           } else {
             const traced = await potrace(pngBuffer).trace();
-
-            // TODO: handle error and reject Promise
-
             resolve(traced);
           }
         });
@@ -376,14 +244,12 @@ export const createColoringImage = async (formData: FormData) => {
     { url: imageSvgBlobUrl },
     { url: qrCodeSvgBlobUrl },
   ] = await Promise.all([
-    // store generated coloring image in blob storage
     put(imageFileName, imageBuffer, {
       access: 'public',
     }),
     put(svgFileName, imageSvgBuffer, {
       access: 'public',
     }),
-    // store generated coloring image in blob storage
     put(qrCodeFileName, qrCodeSvgBuffer, {
       access: 'public',
     }),
@@ -400,6 +266,15 @@ export const createColoringImage = async (formData: FormData) => {
       qrCodeUrl: qrCodeSvgBlobUrl,
     },
   });
+
+  // Clean up temporary file
+  try {
+    if (tempFileName) {
+      await del(tempFileName);
+    }
+  } catch (error) {
+    console.error('Error cleaning up temporary file:', error);
+  }
 
   revalidatePath('/');
 

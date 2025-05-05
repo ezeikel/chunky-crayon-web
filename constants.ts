@@ -10,7 +10,7 @@ export const CREATE_COLORING_PAGE_POST_PROMPT = `
   Build an appropriate scene for the image based on the description provided, creating characters for the scene if mentioned.
 
   These are the rules for the image (please follow them strictly):
-  1. The image should be a simple line drawing suitable for a children’s coloring book.
+  1. The image should be a simple line drawing suitable for a children's coloring book.
   2. No color at all. The image must be black and white only. Absolutely no colors should be used in any part of the image, including eyes, tongues, shoes, and accessories.
   3. No textures, patterns, or gradients. Keep it simple.
   4. Do not duplicate any characters or elements unless specifically asked to do so.
@@ -105,3 +105,20 @@ export const ACTIVITIES = [
 ];
 
 export const LOCATIONS = ['castle', 'ship', 'cave', 'alien planet', 'desert'];
+
+export const OPENAI_MODEL_GPT_4O = 'gpt-4o';
+export const OPENAI_MODEL_DALL_E_3 = 'dall-e-3';
+export const OPENAI_MODEL_GPT_IMAGE = 'gpt-image-1';
+
+export const OPENAI_MODEL_DALL_E_3_OPTIONS = {
+  model: OPENAI_MODEL_DALL_E_3,
+  size: '1024x1024',
+  style: 'natural',
+  quality: 'hd',
+} as const;
+
+export const OPENAI_MODEL_GPT_IMAGE_OPTIONS = {
+  model: OPENAI_MODEL_GPT_IMAGE,
+  size: '1024x1024',
+  quality: 'high',
+} as const;

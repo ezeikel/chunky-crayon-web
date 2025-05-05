@@ -58,7 +58,7 @@ const JoinColoringPageEmailListForm = ({
       <p className="text-[#4B4B4B] text-base leading-5">
         Enter your email to receive a{' '}
         <span className="uppercase font-semibold underline">free</span> coloring
-        page in your inbox every week.
+        page in your inbox every day.
       </p>
       <form
         action={joinColoringPageEmailListAction}
