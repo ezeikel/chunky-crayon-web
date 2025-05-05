@@ -20,6 +20,9 @@ export const generateStaticParams = async () => {
   }));
 };
 
+// revalidate every hour
+export const revalidate = 3600;
+
 export const generateMetadata = async (props: ColoringImagePageProps) => {
   const params = await props.params;
   const { id } = params;
