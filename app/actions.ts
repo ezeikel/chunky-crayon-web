@@ -13,6 +13,7 @@ import {
   OPENAI_MODEL_GPT_4O,
   OPENAI_MODEL_GPT_IMAGE_OPTIONS,
   REFERENCE_IMAGES,
+  INSTAGRAM_CAPTION_PROMPT,
 } from '@/constants';
 import prisma from '@/lib/prisma';
 import { ColoringImage, GenerationType } from '@prisma/client';
@@ -424,4 +425,27 @@ export const generateColoringImageOfTheWeek = async () => {
 
 export const generateColoringImageOfTheMonth = async () => {
   return generateRandomColoringImage(GenerationType.MONTHLY);
+};
+
+export const generateInstagramCaption = async (
+  coloringImage: ColoringImage,
+) => {
+  const response = await openai.chat.completions.create({
+    model: OPENAI_MODEL_GPT_4O,
+    messages: [
+      {
+        role: 'system',
+        content: INSTAGRAM_CAPTION_PROMPT,
+      },
+      {
+        role: 'user',
+        content: `Generate an Instagram caption for this coloring page:
+Title: ${coloringImage.title}
+Description: ${coloringImage.description}
+Tags: ${coloringImage.tags?.join(', ')}`,
+      },
+    ],
+  });
+
+  return response.choices[0].message.content;
 };

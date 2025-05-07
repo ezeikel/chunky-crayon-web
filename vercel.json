@@ -3,6 +3,14 @@
     {
       "path": "/api/email-list/send-daily",
       "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/instagram/post",
+      "schedule": "0 16 * * 1-5"
+    },
+    {
+      "path": "/api/instagram/post",
+      "schedule": "0 15 * * 0,6"
     }
   ]
 }
