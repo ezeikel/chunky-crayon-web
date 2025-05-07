@@ -5,6 +5,8 @@ import { put, del } from '@vercel/blob';
 import prisma from '@/lib/prisma';
 import { generateInstagramCaption } from '@/app/actions';
 
+export const maxDuration = 150;
+
 export const dynamic = 'force-dynamic';
 
 const corsHeaders = {
