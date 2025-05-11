@@ -36,20 +36,18 @@ const INPUT_OPTIONS = [
   },
 ];
 
-const InputOptions = () => {
-  return (
-    <div className="flex gap-8 justify-center items-center flex-wrap">
-      {INPUT_OPTIONS.map((inputOption) => (
-        <button
-          key={inputOption.value}
-          className="flex items-center justify-center p-8 rounded-[68px] bg-teal-800 size-[140px]"
-          type="button"
-        >
-          {inputOption.icon}
-        </button>
-      ))}
-    </div>
-  );
-};
+const InputOptions = () => (
+  <div className="flex gap-8 justify-center items-center flex-wrap">
+    {INPUT_OPTIONS.map((inputOption) => (
+      <button
+        key={inputOption.value}
+        className="flex items-center justify-center p-8 rounded-[68px] bg-teal-800 size-[140px]"
+        type="button"
+      >
+        {inputOption.icon}
+      </button>
+    ))}
+  </div>
+);
 
 export default InputOptions;

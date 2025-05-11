@@ -1,4 +1,3 @@
-// components/ColoringPageNodeDocument.tsx
 import React from 'react';
 import {
   Document,
@@ -77,30 +76,28 @@ const ColoringPageNodeDocument = ({
   coloringImage,
   imageSvg,
   qrCodeSvg,
-}: ColoringPageNodeDocumentProps) => {
-  return (
-    <Document>
-      <Page size="A4" style={styles.page}>
-        <View style={styles.main}>
-          <SvgToReactPdf svgString={imageSvg} style={styles.coloringImage} />
+}: ColoringPageNodeDocumentProps) => (
+  <Document>
+    <Page size="A4" style={styles.page}>
+      <View style={styles.main}>
+        <SvgToReactPdf svgString={imageSvg} style={styles.coloringImage} />
+      </View>
+      <View style={styles.footer}>
+        <SvgToReactPdf svgString={qrCodeSvg} style={styles.qrCodeImage} />
+        <View style={styles.cta}>
+          <Text style={styles.ctaText}>
+            Scan the QR code to discover more coloring pages!
+          </Text>
+          <Link
+            src={`https://chunkycrayon.com?utm_source=${coloringImage.id}&utm_medium=pdf-link&utm_campaign=coloring-image-pdf`}
+            style={styles.ctaLink}
+          >
+            www.chunkycrayon.com
+          </Link>
         </View>
-        <View style={styles.footer}>
-          <SvgToReactPdf svgString={qrCodeSvg} style={styles.qrCodeImage} />
-          <View style={styles.cta}>
-            <Text style={styles.ctaText}>
-              Scan the QR code to discover more coloring pages!
-            </Text>
-            <Link
-              src={`https://chunkycrayon.com?utm_source=${coloringImage.id}&utm_medium=pdf-link&utm_campaign=coloring-image-pdf`}
-              style={styles.ctaLink}
-            >
-              www.chunkycrayon.com
-            </Link>
-          </View>
-        </View>
-      </Page>
-    </Document>
-  );
-};
+      </View>
+    </Page>
+  </Document>
+);
 
 export default ColoringPageNodeDocument;

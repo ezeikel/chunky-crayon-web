@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import { joinColoringPageEmailList } from '@/app/actions';
 
 export const POST = async (request: Request) => {

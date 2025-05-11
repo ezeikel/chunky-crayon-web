@@ -12,19 +12,13 @@ const SvgToReactPdf = ({ svgString, style }: SvgToReactPdfProps) => {
 
     // make sure we don't spread undefined values
     const filteredSvgProps = Object.fromEntries(
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       Object.entries(svgProps).filter(([_, v]) => v !== undefined),
     );
 
     return (
-      <Svg
-        style={style}
-        viewBox="0 0 1024 1024"
-        // eslint-disable-next-line react/jsx-props-no-spreading
-        {...filteredSvgProps}
-      >
+      <Svg style={style} viewBox="0 0 1024 1024" {...filteredSvgProps}>
         {paths.map((pathProps, index) => (
-          // eslint-disable-next-line react/jsx-props-no-spreading, react/no-array-index-key
+          // eslint-disable-next-line react/no-array-index-key
           <Path key={index} {...pathProps} />
         ))}
       </Svg>

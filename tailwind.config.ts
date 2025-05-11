@@ -79,7 +79,7 @@ const config = {
       },
     },
   },
-  // eslint-disable-next-line import/no-extraneous-dependencies, global-require
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   plugins: [require('tailwindcss-animate')],
 } satisfies Config;
 

@@ -47,7 +47,7 @@ const JoinColoringPageEmailListForm = ({
 
       console.error({ error: state.error });
     }
-  }, [state.success, state.error]);
+  }, [state.success, state.error, state.email, toast]);
 
   return (
     <div

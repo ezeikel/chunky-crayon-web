@@ -168,7 +168,7 @@ export const createColoringImage = async (formData: FormData) => {
           {
             type: 'image_url',
             image_url: {
-              url: imageUrl as string,
+              url: imageUrl,
             },
           },
         ],
@@ -213,8 +213,8 @@ export const createColoringImage = async (formData: FormData) => {
   const imageBuffer = await response.arrayBuffer();
 
   // convert png to svg using Potrace
-  const pngToSvg = async (buffer: ArrayBuffer): Promise<string> => {
-    return new Promise((resolve, reject) => {
+  const pngToSvg = async (buffer: ArrayBuffer): Promise<string> =>
+    new Promise((resolve, reject) => {
       sharp(buffer)
         .toFormat('png')
         .toBuffer(async (err, pngBuffer) => {
@@ -226,7 +226,6 @@ export const createColoringImage = async (formData: FormData) => {
           }
         });
     });
-  };
 
   const svg = await pngToSvg(imageBuffer);
   const imageSvgBuffer = Buffer.from(svg);
@@ -415,17 +414,14 @@ type EmailData = {
   generationType: GenerationType;
 };
 
-export const generateColoringImageOfTheDay = async () => {
-  return generateRandomColoringImage(GenerationType.DAILY);
-};
+export const generateColoringImageOfTheDay = async () =>
+  generateRandomColoringImage(GenerationType.DAILY);
 
-export const generateColoringImageOfTheWeek = async () => {
-  return generateRandomColoringImage(GenerationType.WEEKLY);
-};
+export const generateColoringImageOfTheWeek = async () =>
+  generateRandomColoringImage(GenerationType.WEEKLY);
 
-export const generateColoringImageOfTheMonth = async () => {
-  return generateRandomColoringImage(GenerationType.MONTHLY);
-};
+export const generateColoringImageOfTheMonth = async () =>
+  generateRandomColoringImage(GenerationType.MONTHLY);
 
 export const generateInstagramCaption = async (
   coloringImage: ColoringImage,

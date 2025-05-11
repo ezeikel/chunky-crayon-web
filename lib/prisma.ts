@@ -1,33 +1,30 @@
-import { Pool } from '@neondatabase/serverless';
 import { PrismaClient } from '@prisma/client';
 import { PrismaNeon } from '@prisma/adapter-neon';
+import { neonConfig } from '@neondatabase/serverless';
+import ws from 'ws';
 
-// PrismaClient is attached to the `global` object in development to prevent
-// exhausting your database connection limit.
-//
-// Learn more:
-// https://pris.ly/d/help/next-js-best-practices
+// configure WebSocket for Neon
+neonConfig.webSocketConstructor = ws;
+// enable querying over fetch for edge environments (Vercel)
+neonConfig.poolQueryViaFetch = true;
 
 const connectionString = process.env.POSTGRES_PRISMA_URL;
-
 if (!connectionString) {
   throw new Error('POSTGRES_PRISMA_URL is not defined');
 }
 
-const pool = new Pool({ connectionString });
-const adapter = new PrismaNeon(pool as any);
+const adapter = new PrismaNeon({ connectionString });
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
-const prismaClientSingleton = () => {
-  return new PrismaClient({
+const prismaClientSingleton = () =>
+  new PrismaClient({
     adapter,
     log:
       process.env.NODE_ENV === 'development'
         ? [{ emit: 'event', level: 'query' }]
         : undefined,
   });
-};
 
 const prisma = globalForPrisma.prisma || prismaClientSingleton();
 

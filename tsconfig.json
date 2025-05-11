@@ -31,8 +31,7 @@
     "jest.config.ts",
     "test/jest.common.ts",
     "test/jest.setup.ts",
-    "./test/jest.client.ts",
-    "./test/jest.lint.ts"
+    "./test/jest.client.ts"
   ],
   "exclude": ["node_modules"]
 }

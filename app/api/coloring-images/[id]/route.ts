@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import { getColoringImage } from '@/app/actions';
 
 export const GET = async (
