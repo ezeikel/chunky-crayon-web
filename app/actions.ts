@@ -7,7 +7,6 @@ import QRCode from 'qrcode';
 import potrace from 'oslllo-potrace';
 import sharp from 'sharp';
 import mailchimp from '@mailchimp/mailchimp_marketing';
-import { Resend } from 'resend';
 import { Readable } from 'stream';
 import {
   OPENAI_MODEL_GPT_4O,
@@ -21,6 +20,7 @@ import { getRandomDescription } from '@/utils/random';
 import generatePDFNode from '@/utils/generatePDFNode';
 import streamToBuffer from '@/utils/streamToBuffer';
 import fetchSvg from '@/utils/fetchSvg';
+import { sendEmail } from '@/utils/email';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -30,8 +30,6 @@ mailchimp.setConfig({
   apiKey: process.env.MAILCHIMP_API_KEY,
   server: process.env.MAILCHIMP_API_SERVER,
 });
-
-const resend = new Resend(process.env.RESEND_API_KEY as string);
 
 // generate coloring image from openai based on text/audio/image description
 const generateColoringImage = async (description: string) => {
@@ -92,37 +90,6 @@ const cleanUpDescription = async (roughUserDescription: string) => {
   });
 
   return response.choices[0].message.content;
-};
-
-const sendEmail = async ({
-  to,
-  coloringImagePdf,
-  generationType,
-}: EmailData) => {
-  const date = new Date();
-  const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
-  const day = date.getDate();
-  const month = date.toLocaleDateString('en-US', { month: 'short' });
-
-  const typeMap: Record<GenerationType, string> = {
-    [GenerationType.DAILY]: 'Daily',
-    [GenerationType.WEEKLY]: 'Weekly',
-    [GenerationType.MONTHLY]: 'Monthly',
-    [GenerationType.USER]: 'Custom',
-  };
-
-  return resend.emails.send({
-    from: 'Chunky Crayon <no-reply@chunkycrayon.com>',
-    to,
-    subject: `${typeMap[generationType]} Coloring Image for ${dayName} ${day} ${month}`,
-    text: 'Please find attached the coloring image for today',
-    attachments: [
-      {
-        filename: `${typeMap[generationType].toLowerCase()}-coloring-image-${dayName}-${day}-${month}.pdf`,
-        content: coloringImagePdf,
-      },
-    ],
-  });
 };
 
 export const createColoringImage = async (formData: FormData) => {
@@ -395,23 +362,13 @@ export const generateRandomColoringImage = async (
   );
 
   // send email to all emails in the list with the coloring image as an attachment pdf
-  await Promise.all(
-    emails.map((email) =>
-      sendEmail({
-        to: email,
-        coloringImagePdf: pdfBuffer,
-        generationType,
-      }),
-    ),
-  );
+  await sendEmail({
+    to: emails,
+    coloringImagePdf: pdfBuffer,
+    generationType,
+  });
 
   return coloringImage;
-};
-
-type EmailData = {
-  to: string;
-  coloringImagePdf: Buffer;
-  generationType: GenerationType;
 };
 
 export const generateColoringImageOfTheDay = async () =>
