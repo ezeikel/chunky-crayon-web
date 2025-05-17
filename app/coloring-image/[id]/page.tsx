@@ -10,6 +10,9 @@ type ColoringImagePageProps = {
   }>;
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const experimental_ppr = true;
+
 export const generateStaticParams = async () => {
   const images = await getAllColoringImages();
 

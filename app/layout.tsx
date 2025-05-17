@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/react';
@@ -94,7 +95,9 @@ export default function RootLayout({
         )}
       >
         <Providers>
-          <Header />
+          <Suspense fallback={<div>Loading header...</div>}>
+            <Header />
+          </Suspense>
           <main>
             {children}
             {shouldInjectToolbar && <VercelToolbar />}

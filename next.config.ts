@@ -3,14 +3,7 @@ import { withPlausibleProxy } from 'next-plausible';
 import type { NextConfig } from 'next';
 import withVercelToolbar from '@vercel/toolbar/plugins/next';
 
-// extend NextConfig to include serverExternalPackages experimental feature
-type ExtendedNextConfig = NextConfig & {
-  experimental: NextConfig['experimental'] & {
-    serverExternalPackages?: string[];
-  };
-};
-
-const nextConfig: ExtendedNextConfig = {
+const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
@@ -25,8 +18,9 @@ const nextConfig: ExtendedNextConfig = {
       },
     ],
   },
+  serverExternalPackages: ['@react-pdf/renderer'],
   experimental: {
-    serverExternalPackages: ['@react-pdf/renderer'],
+    ppr: true,
   },
 };
 
