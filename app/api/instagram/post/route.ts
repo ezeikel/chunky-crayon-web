@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { GenerationType } from '@prisma/client';
 import sharp from 'sharp';
 import { put, del } from '@vercel/blob';
-import prisma from '@/lib/prisma';
+import { db } from '@/lib/prisma';
 import { generateInstagramCaption } from '@/app/actions';
 
 export const maxDuration = 150;
@@ -117,7 +117,7 @@ const handleRequest = async () => {
     }
 
     // get the most recent daily coloring image
-    const coloringImage = await prisma.coloringImage.findFirst({
+    const coloringImage = await db.coloringImage.findFirst({
       where: {
         generationType: GenerationType.DAILY,
       },

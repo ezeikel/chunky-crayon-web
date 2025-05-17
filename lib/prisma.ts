@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma, $Enums } from '@prisma/client';
 import { PrismaNeon } from '@prisma/adapter-neon';
 import { neonConfig } from '@neondatabase/serverless';
 import ws from 'ws';
@@ -9,6 +9,7 @@ neonConfig.webSocketConstructor = ws;
 neonConfig.poolQueryViaFetch = true;
 
 const connectionString = process.env.POSTGRES_PRISMA_URL;
+
 if (!connectionString) {
   throw new Error('POSTGRES_PRISMA_URL is not defined');
 }
@@ -26,8 +27,8 @@ const prismaClientSingleton = () =>
         : undefined,
   });
 
-const prisma = globalForPrisma.prisma || prismaClientSingleton();
+export const db = globalForPrisma.prisma || prismaClientSingleton();
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+export type { $Enums, Prisma };
 
-export default prisma;
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;

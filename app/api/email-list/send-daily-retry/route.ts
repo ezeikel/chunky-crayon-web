@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { GenerationType } from '@prisma/client';
-import prisma from '@/lib/prisma';
+import { db } from '@/lib/prisma';
 import fetchSvg from '@/utils/fetchSvg';
 import generatePDFNode from '@/utils/generatePDFNode';
 import { Readable } from 'stream';
@@ -35,7 +35,7 @@ const handleRequest = async (request: Request) => {
     const emailList = emails.split(',').map((email) => email.trim());
 
     // get the most recent daily coloring image
-    const coloringImage = await prisma.coloringImage.findFirst({
+    const coloringImage = await db.coloringImage.findFirst({
       where: {
         generationType: GenerationType.DAILY,
       },

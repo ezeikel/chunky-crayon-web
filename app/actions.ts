@@ -14,7 +14,7 @@ import {
   REFERENCE_IMAGES,
   INSTAGRAM_CAPTION_PROMPT,
 } from '@/constants';
-import prisma from '@/lib/prisma';
+import { db } from '@/lib/prisma';
 import { ColoringImage, GenerationType } from '@prisma/client';
 import { getRandomDescription } from '@/utils/random';
 import generatePDFNode from '@/utils/generatePDFNode';
@@ -155,7 +155,7 @@ export const createColoringImage = async (formData: FormData) => {
   );
 
   // create new coloringImage in db
-  const coloringImage = await prisma.coloringImage.create({
+  const coloringImage = await db.coloringImage.create({
     data: {
       title: generateImageMetadataResponseContent.title,
       description: generateImageMetadataResponseContent.description,
@@ -223,7 +223,7 @@ export const createColoringImage = async (formData: FormData) => {
   ]);
 
   // update coloringImage in db with qr code url
-  const updatedColoringImage = await prisma.coloringImage.update({
+  const updatedColoringImage = await db.coloringImage.update({
     where: {
       id: coloringImage.id,
     },
@@ -251,7 +251,7 @@ export const createColoringImage = async (formData: FormData) => {
 export const getColoringImage = async (
   id: string,
 ): Promise<Partial<ColoringImage> | null> =>
-  prisma.coloringImage.findUnique({
+  db.coloringImage.findUnique({
     where: {
       id,
     },
@@ -268,7 +268,7 @@ export const getColoringImage = async (
   });
 
 export const getAllColoringImages = async () =>
-  prisma.coloringImage.findMany({
+  db.coloringImage.findMany({
     select: {
       id: true,
       svgUrl: true,

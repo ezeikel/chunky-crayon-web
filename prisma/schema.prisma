@@ -9,11 +9,46 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
-enum GenerationType {
-  USER
-  DAILY
-  WEEKLY
-  MONTHLY
+model User {
+  id               String   @id @default(cuid())
+  email            String   @unique
+  name             String?
+  stripeCustomerId String? // set after Stripe customer creation
+  credits          Int      @default(0) // TODO: set intiial credits for new users instead of to entice them to subscribe
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  subscriptions      Subscription[]
+  creditTransactions CreditTransaction[]
+  coloringImages     ColoringImage[]
+
+  @@map("users")
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String
+  user                 User               @relation(fields: [userId], references: [id])
+  stripeSubscriptionId String             @unique
+  planName             PlanName
+  status               SubscriptionStatus
+  currentPeriodEnd     DateTime
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@map("subscriptions")
+}
+
+model CreditTransaction {
+  id        String                @id @default(cuid())
+  userId    String
+  user      User                  @relation(fields: [userId], references: [id])
+  amount    Int // positive for credit, negative for usage
+  type      CreditTransactionType
+  reference String? // Stripe payment intent, etc.
+  createdAt DateTime              @default(now())
+
+  @@map("credit_transactions")
 }
 
 model ColoringImage {
@@ -25,9 +60,42 @@ model ColoringImage {
   svgUrl         String?
   qrCodeUrl      String?
   tags           String[]
-  generationType GenerationType @default(USER)
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
+  generationType GenerationType @default(USER)
+  User           User?          @relation(fields: [userId], references: [id])
+  userId         String?
 
   @@map("coloring_images")
+}
+
+enum GenerationType {
+  USER
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum PlanName {
+  CRAYON
+  RAINBOW
+  MASTERPIECE
+  STUDIO
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  INCOMPLETE
+  PAST_DUE
+  UNPAID
+  TRIALING
+}
+
+enum CreditTransactionType {
+  PURCHASE // user bought credits (one-off or via subscription)
+  GENERATION // user spent credits to generate an image
+  BONUS // user received bonus credits (promo, referral, etc.)
+  REFUND // credits refunded to user
+  ADJUSTMENT // manual admin adjustment
 }
