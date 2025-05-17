@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/react';
+import { VercelToolbar } from '@vercel/toolbar/next';
 import { config } from '@fortawesome/fontawesome-svg-core';
 import PlausibleProvider from 'next-plausible';
 import '@fortawesome/fontawesome-svg-core/styles.css';
@@ -55,6 +56,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const shouldInjectToolbar = process.env.NODE_ENV === 'development';
   return (
     <html lang="en">
       <head>
@@ -92,7 +94,10 @@ export default function RootLayout({
       >
         <Providers>
           <Header />
-          <main>{children}</main>
+          <main>
+            {children}
+            {shouldInjectToolbar && <VercelToolbar />}
+          </main>
         </Providers>
         <Toaster />
         <Analytics />

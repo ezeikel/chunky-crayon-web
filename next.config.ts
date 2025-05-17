@@ -1,6 +1,7 @@
 import { withSentryConfig } from '@sentry/nextjs';
 import { withPlausibleProxy } from 'next-plausible';
 import type { NextConfig } from 'next';
+import withVercelToolbar from '@vercel/toolbar/plugins/next';
 
 // extend NextConfig to include serverExternalPackages experimental feature
 type ExtendedNextConfig = NextConfig & {
@@ -47,4 +48,6 @@ const configWithSentry = withSentryConfig(nextConfig, sentryOptions);
 
 const configWithPlausible = withPlausibleProxy()(configWithSentry);
 
-export default configWithPlausible;
+const configWithVercelToolbar = withVercelToolbar()(configWithPlausible);
+
+export default configWithVercelToolbar;
