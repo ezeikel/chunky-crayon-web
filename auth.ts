@@ -2,7 +2,7 @@ import NextAuth from 'next-auth';
 import type { NextAuthConfig, Session } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import AppleProvider from 'next-auth/providers/apple';
-import Resend from 'next-auth/providers/resend';
+// import Resend from 'next-auth/providers/resend';
 import type { JWT } from 'next-auth/jwt';
 import { db } from './lib/prisma';
 
@@ -16,10 +16,10 @@ const config = {
       clientId: process.env.AUTH_APPLE_ID as string,
       clientSecret: process.env.AUTH_APPLE_SECRET as string,
     }),
-    Resend({
-      apiKey: process.env.RESEND_API_KEY,
-      from: process.env.EMAIL_FROM,
-    }),
+    // Resend({
+    //   apiKey: process.env.RESEND_API_KEY,
+    //   from: process.env.EMAIL_FROM,
+    // }),
   ],
   callbacks: {
     async signIn({ account, profile, email }) {
