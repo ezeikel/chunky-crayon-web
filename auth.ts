@@ -3,7 +3,6 @@ import type { NextAuthConfig, Session, Profile } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import AppleProvider from 'next-auth/providers/apple';
 import Resend from 'next-auth/providers/resend';
-import type { JWT } from 'next-auth/jwt';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { db } from './lib/prisma';
 
@@ -16,23 +15,27 @@ type AppleProfile = Profile & {
 
 const config = {
   adapter: PrismaAdapter(db),
+  session: {
+    strategy: 'database',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours
+  },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      allowDangerousEmailAccountLinking: true,
     }),
     AppleProvider({
       clientId: process.env.AUTH_APPLE_ID as string,
       clientSecret: process.env.AUTH_APPLE_SECRET as string,
+      allowDangerousEmailAccountLinking: true,
     }),
     Resend({
       apiKey: process.env.RESEND_API_KEY,
       from: 'no-reply@chunkycrayon.com',
     }),
   ],
-  session: {
-    strategy: 'jwt',
-  },
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
       // DEBUG:
