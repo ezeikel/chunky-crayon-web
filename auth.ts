@@ -2,8 +2,9 @@ import NextAuth from 'next-auth';
 import type { NextAuthConfig, Session, Profile } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import AppleProvider from 'next-auth/providers/apple';
-// import Resend from 'next-auth/providers/resend';
+import Resend from 'next-auth/providers/resend';
 import type { JWT } from 'next-auth/jwt';
+import { PrismaAdapter } from '@auth/prisma-adapter';
 import { db } from './lib/prisma';
 
 type AppleProfile = Profile & {
@@ -14,6 +15,7 @@ type AppleProfile = Profile & {
 };
 
 const config = {
+  adapter: PrismaAdapter(db),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -23,24 +25,29 @@ const config = {
       clientId: process.env.AUTH_APPLE_ID as string,
       clientSecret: process.env.AUTH_APPLE_SECRET as string,
     }),
-    // Resend({
-    //   apiKey: process.env.RESEND_API_KEY,
-    //   from: process.env.EMAIL_FROM,
-    // }),
+    Resend({
+      apiKey: process.env.RESEND_API_KEY,
+      from: 'no-reply@chunkycrayon.com',
+    }),
   ],
+  session: {
+    strategy: 'jwt',
+  },
   callbacks: {
-    async signIn({ account, profile, email }) {
+    async signIn({ user, account, profile, email, credentials }) {
       // DEBUG:
-      console.log('signIn', account, profile, email);
+      console.log('signIn', { user, account, profile, email, credentials });
+
+      // Handle email verification request
+      if (email?.verificationRequest) {
+        return true; // Allow the verification request to proceed
+      }
 
       if (account?.provider === 'google' || account?.provider === 'apple') {
         const appleProfile = profile as AppleProfile;
         const existingUser = profile?.email
           ? await db.user.findUnique({ where: { email: profile.email } })
           : null;
-
-        // DEBUG:
-        console.log('existingUser', existingUser);
 
         if (existingUser) {
           return true;
@@ -66,7 +73,8 @@ const config = {
       }
 
       if (account?.provider === 'resend') {
-        const userEmail = email?.toString();
+        const userEmail = account.providerAccountId;
+
         if (!userEmail) return false;
 
         const existingUser = await db.user.findUnique({
@@ -88,7 +96,7 @@ const config = {
 
       return false;
     },
-    async session({ session, token }: { session: Session; token: JWT }) {
+    async session({ session, token, user }) {
       const dbUser = token.email
         ? await db.user.findUnique({
             where: { email: token.email },
