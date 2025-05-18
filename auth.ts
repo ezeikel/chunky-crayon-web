@@ -1,10 +1,17 @@
 import NextAuth from 'next-auth';
-import type { NextAuthConfig, Session } from 'next-auth';
+import type { NextAuthConfig, Session, Profile } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import AppleProvider from 'next-auth/providers/apple';
 // import Resend from 'next-auth/providers/resend';
 import type { JWT } from 'next-auth/jwt';
 import { db } from './lib/prisma';
+
+type AppleProfile = Profile & {
+  user?: {
+    firstName?: string;
+    lastName?: string;
+  };
+};
 
 const config = {
   providers: [
@@ -27,6 +34,7 @@ const config = {
       console.log('signIn', account, profile, email);
 
       if (account?.provider === 'google' || account?.provider === 'apple') {
+        const appleProfile = profile as AppleProfile;
         const existingUser = profile?.email
           ? await db.user.findUnique({ where: { email: profile.email } })
           : null;
@@ -38,10 +46,19 @@ const config = {
           return true;
         }
 
+        let name;
+
+        if (account?.provider === 'google') {
+          name = profile?.name;
+        } else if (account?.provider === 'apple' && appleProfile?.user) {
+          // Apple only returns the user object this first time the user authorises the app - subsequent authorisations don't return the user object https://stackoverflow.com/questions/63500926/apple-sign-in-authorize-method-returns-name-only-first-time
+          name = `${appleProfile.user.firstName} ${appleProfile.user.lastName}`;
+        }
+
         await db.user.create({
           data: {
             email: profile?.email as string,
-            name: profile?.name as string,
+            name: name as string,
           },
         });
 
