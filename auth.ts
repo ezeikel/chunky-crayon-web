@@ -1,5 +1,5 @@
 import NextAuth from 'next-auth';
-import type { NextAuthConfig, Session, Profile } from 'next-auth';
+import type { NextAuthConfig, Profile } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import AppleProvider from 'next-auth/providers/apple';
 import Resend from 'next-auth/providers/resend';
@@ -37,13 +37,11 @@ const config = {
     }),
   ],
   callbacks: {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async signIn({ user, account, profile, email, credentials }) {
-      // DEBUG:
-      console.log('signIn', { user, account, profile, email, credentials });
-
-      // Handle email verification request
+      // handle magic link request
       if (email?.verificationRequest) {
-        return true; // Allow the verification request to proceed
+        return true;
       }
 
       if (account?.provider === 'google' || account?.provider === 'apple') {
@@ -98,21 +96,6 @@ const config = {
       }
 
       return false;
-    },
-    async session({ session, token, user }) {
-      const dbUser = token.email
-        ? await db.user.findUnique({
-            where: { email: token.email },
-          })
-        : null;
-
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          id: dbUser?.id,
-        },
-      };
     },
   },
   secret: process.env.NEXT_AUTH_SECRET,

@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma, $Enums } from '@prisma/client';
+import { PrismaClient, Prisma, $Enums, User } from '@prisma/client';
 import { PrismaNeon } from '@prisma/adapter-neon';
 import { neonConfig } from '@neondatabase/serverless';
 import ws from 'ws';
@@ -29,6 +29,6 @@ const prismaClientSingleton = () =>
 
 export const db = globalForPrisma.prisma || prismaClientSingleton();
 
-export type { $Enums, Prisma };
+export type { $Enums, Prisma, User };
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;

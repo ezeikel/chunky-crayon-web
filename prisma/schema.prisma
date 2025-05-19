@@ -16,7 +16,7 @@ model User {
   emailVerified    DateTime?
   image            String?
   stripeCustomerId String? // set after Stripe customer creation
-  credits          Int       @default(0) // TODO: set intiial credits for new users instead of to entice them to subscribe
+  credits          Int       @default(15) // TODO: set intiial credits for new users instead of to entice them to subscribe
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
