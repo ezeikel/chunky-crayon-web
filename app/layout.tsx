@@ -98,7 +98,7 @@ export default function RootLayout({
           <Suspense fallback={<div>Loading header...</div>}>
             <Header />
           </Suspense>
-          <main>
+          <main className="flex flex-col min-h-[calc(100vh-72px)] [&>div]:flex-1">
             {children}
             {shouldInjectToolbar && <VercelToolbar />}
           </main>
