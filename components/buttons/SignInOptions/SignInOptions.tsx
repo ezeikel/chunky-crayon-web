@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 
-const SignInButtons = () => {
+const SignInOptions = () => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -100,4 +100,4 @@ const SignInButtons = () => {
   );
 };
 
-export default SignInButtons;
+export default SignInOptions;

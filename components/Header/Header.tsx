@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { showAuthButtonsFlag } from '@/flags';
 import { getCurrentUser } from '@/app/actions/user';
 import { signOut } from '@/auth';
-import SignInButtons from '../buttons/SignInButtons/SignInButtons';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 const Header = async () => {
@@ -42,11 +41,11 @@ const Header = async () => {
       );
     }
 
-    return <SignInButtons />;
+    return <Link href="/signin">Sign in</Link>;
   };
 
   return (
-    <header className="flex items-center justify-between p-4 shadow-perfect sticky top-0 z-10 bg-white">
+    <header className="flex items-center justify-between p-4 shadow-perfect sticky top-0 z-50 bg-white">
       <Link href="/">
         <h1 className="font-tondo text-4xl font-bold text-[#FF8A65] tracking-tight">
           Chunky Crayon

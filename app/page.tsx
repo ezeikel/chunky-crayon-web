@@ -3,6 +3,7 @@ import PageWrap from '@/components/PageWrap/PageWrap';
 import CreateColoringPageForm from '@/components/forms/CreateColoringPageForm/CreateColoringPageForm';
 import AllColoringPageImages from '@/components/AllColoringPageImages/AllColoringPageImages';
 import Intro from '@/components/Intro/Intro';
+import { showAuthButtonsFlag } from '@/flags';
 
 export const maxDuration = 150;
 
@@ -15,14 +16,21 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-const HomePage = () => (
-  <PageWrap className='bg-gradient-to-br from-[#FFF2E6] to-[#FFE6CC]" items-center gap-y-16'>
-    <div className="flex flex-col md:flex-row gap-16 w-full items-center md:items-start md:justify-start">
-      <Intro className="flex-grow-1 flex-shrink-1 basis-1 md:basis-1/2" />
-      <CreateColoringPageForm className="flex-grow-1 flex-shrink-0 basis-1 md:basis-1/2" />
-    </div>
-    <AllColoringPageImages />
-  </PageWrap>
-);
+const HomePage = async () => {
+  const showAuthButtons = (await showAuthButtonsFlag()) as boolean;
+
+  return (
+    <PageWrap className='bg-gradient-to-br from-[#FFF2E6] to-[#FFE6CC]" items-center gap-y-16'>
+      <div className="flex flex-col md:flex-row gap-16 w-full items-center md:items-start md:justify-start">
+        <Intro className="flex-grow-1 flex-shrink-1 basis-1 md:basis-1/2" />
+        <CreateColoringPageForm
+          className="flex-grow-1 flex-shrink-0 basis-1 md:basis-1/2"
+          showAuthButtons={showAuthButtons}
+        />
+      </div>
+      <AllColoringPageImages />
+    </PageWrap>
+  );
+};
 
 export default HomePage;

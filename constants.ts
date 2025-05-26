@@ -134,3 +134,165 @@ export const INSTAGRAM_CAPTION_PROMPT = `You are a social media expert who creat
 7. Includes popular coloring-related hashtags
 
 Important: Write in a natural, human-like way that resonates with our audience. Avoid using dashes (—) in your captions as they can make the text feel artificial.`;
+
+export const FREE_CREDITS = 15;
+
+export const ACTIONS = {
+  GET_CURRENT_USER: 'get the current user',
+  GET_USER_CREDITS: 'get the user credits',
+  GET_USER_SUBSCRIPTIONS: 'get the user subscriptions',
+  GET_USER_SUBSCRIPTION: 'get the user subscription',
+  GET_USER_SUBSCRIPTION_STATUS: 'get the user subscription status',
+  GET_USER_SUBSCRIPTION_STATUS_BY_ID: 'get the user subscription status by id',
+  GET_USER_SUBSCRIPTION_STATUS_BY_NAME:
+    'get the user subscription status by name',
+  GET_USER_SUBSCRIPTION_STATUS_BY_ID_AND_NAME:
+    'get the user subscription status by id and name',
+  GET_USER_SUBSCRIPTION_STATUS_BY_ID_AND_NAME_AND_STATUS:
+    'get the user subscription status by id and name and status',
+};
+
+export type PlanInterval = 'monthly' | 'annual';
+
+export type Plan = {
+  name: string;
+  tagline: string;
+  price: string; // e.g '£7.99'
+  credits: string;
+  features: string[];
+  bonus: string;
+  audience: string;
+  stripePriceEnv: string; // e.g 'NEXT_PUBLIC_STRIPE_PRICE_CRAYON_MONTHLY'
+  mostPopular?: boolean;
+};
+
+export const PRICING: Record<PlanInterval, Plan[]> = {
+  monthly: [
+    {
+      name: 'Crayon Plan',
+      tagline: 'Start your coloring adventure',
+      price: '£7.99',
+      credits: '250 credits/month',
+      features: [
+        'Create coloring pages from text prompts',
+        'Create coloring pages with words, names, and numbers',
+        'Adjust color, contrast, and brightness',
+        'Turn photos into coloring pages',
+      ],
+      bonus: '🎁 Bonus: 25 extra credits for experimenting and retries',
+      audience: 'Perfect for casual colorers and young artists',
+      stripePriceEnv: process.env
+        .NEXT_PUBLIC_STRIPE_PRICE_CRAYON_MONTHLY as string,
+    },
+    {
+      name: 'Rainbow Plan',
+      tagline: 'Fun for the whole family',
+      price: '£13.99',
+      credits: '500 credits/month',
+      features: [
+        'All Crayon Plan features',
+        'Advanced editing features',
+        'Early access to new models and features',
+      ],
+      bonus: '🎁 Bonus: 50 extra credits for experimenting and retries',
+      audience: 'Great for creative families and siblings',
+      stripePriceEnv: process.env
+        .NEXT_PUBLIC_STRIPE_PRICE_RAINBOW_MONTHLY as string,
+      mostPopular: true,
+    },
+    {
+      name: 'Masterpiece Plan',
+      tagline: 'For color enthusiasts',
+      price: '£24.99',
+      credits: '1,000 credits/month',
+      features: [
+        'All Rainbow Plan features',
+        'Bulk generation',
+        'Commercial use',
+      ],
+      bonus: '🎁 Bonus: 75 extra credits for experimenting and retries',
+      audience: 'Perfect for adults and serious colorers',
+      stripePriceEnv: process.env
+        .NEXT_PUBLIC_STRIPE_PRICE_MASTERPIECE_MONTHLY as string,
+    },
+    {
+      name: 'Studio Plan',
+      tagline: 'For super creators and small businesses',
+      price: '£59.99',
+      credits: '5,000 credits/month',
+      features: [
+        'All Masterpiece Plan features',
+        'Rollover up to 3 months of credits',
+      ],
+      bonus: '🎁 Bonus: 250 extra credits for experimenting and retries',
+      audience: 'Best for studios, teachers, and high-volume users',
+      stripePriceEnv: process.env
+        .NEXT_PUBLIC_STRIPE_PRICE_STUDIO_MONTHLY as string,
+    },
+  ],
+  annual: [
+    {
+      name: 'Crayon Plan',
+      tagline: 'Start your coloring adventure',
+      price: '£79.99',
+      credits: '250 credits/month',
+      features: [
+        'Create coloring pages from text prompts',
+        'Create coloring pages with words, names, and numbers',
+        'Adjust color, contrast, and brightness',
+        'Turn photos into coloring pages',
+      ],
+      bonus: '🎁 Bonus: 25 extra credits for experimenting and retries',
+      audience: 'Perfect for casual colorers and young artists',
+      stripePriceEnv: process.env
+        .NEXT_PUBLIC_STRIPE_PRICE_CRAYON_ANNUAL as string,
+    },
+    {
+      name: 'Rainbow Plan',
+      tagline: 'Fun for the whole family',
+      price: '£139.99',
+      credits: '500 credits/month',
+      features: [
+        'All Crayon Plan features',
+        'Advanced editing features',
+        'Early access to new models and features',
+      ],
+      bonus: '🎁 Bonus: 50 extra credits for experimenting and retries',
+      audience: 'Great for creative families and siblings',
+      stripePriceEnv: process.env
+        .NEXT_PUBLIC_STRIPE_PRICE_RAINBOW_ANNUAL as string,
+      mostPopular: true,
+    },
+    {
+      name: 'Masterpiece Plan',
+      tagline: 'For color enthusiasts',
+      price: '£249.99',
+      credits: '1,000 credits/month',
+      features: [
+        'All Rainbow Plan features',
+        'Bulk generation',
+        'Commercial use',
+      ],
+      bonus: '🎁 Bonus: 75 extra credits for experimenting and retries',
+      audience: 'Perfect for adults and serious colorers',
+      stripePriceEnv: process.env
+        .NEXT_PUBLIC_STRIPE_PRICE_MASTERPIECE_ANNUAL as string,
+    },
+    {
+      name: 'Studio Plan',
+      tagline: 'For super creators and small businesses',
+      price: '£599.00',
+      credits: '5,000 credits/month',
+      features: [
+        'All Masterpiece Plan features',
+        'Rollover up to 3 months of credits',
+      ],
+      bonus: '🎁 Bonus: 250 extra credits for experimenting and retries',
+      audience: 'Best for studios, teachers, and high-volume users',
+      stripePriceEnv: process.env
+        .NEXT_PUBLIC_STRIPE_PRICE_STUDIO_ANNUAL as string,
+    },
+  ],
+};
+
+export const STRIPE_API_VERSION = '2025-04-30.basil';
