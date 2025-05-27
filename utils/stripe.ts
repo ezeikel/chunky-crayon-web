@@ -81,3 +81,18 @@ export const getCreditAmountFromPriceId = (priceId?: string): number | null => {
       return null;
   }
 };
+
+export const getCreditAmountFromPlanName = (planName: PlanName): number => {
+  switch (planName) {
+    case PlanName.CRAYON:
+      return 250;
+    case PlanName.RAINBOW:
+      return 500;
+    case PlanName.MASTERPIECE:
+      return 1000;
+    case PlanName.STUDIO:
+      return 5000;
+    default:
+      throw new Error(`Unknown plan name: ${planName}`);
+  }
+};

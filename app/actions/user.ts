@@ -9,6 +9,7 @@ export const getUserId = async (action?: string) => {
 
   const userId = session?.user.id;
 
+  // if the action is to get the current user, return the user id without checking if the user is logged in
   if (action === ACTIONS.GET_CURRENT_USER) {
     return userId;
   }

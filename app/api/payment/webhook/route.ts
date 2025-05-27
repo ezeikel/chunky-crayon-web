@@ -11,6 +11,7 @@ import {
   mapStripeStatusToSubscriptionStatus,
   mapStripePriceToPlanName,
   getCreditAmountFromPriceId,
+  getCreditAmountFromPlanName,
 } from '@/utils/stripe';
 
 export const POST = async (req: Request) => {
@@ -44,14 +45,12 @@ export const POST = async (req: Request) => {
   if (stripeEvent.type === 'checkout.session.completed') {
     const session = stripeEvent.data.object;
 
-    console.log('session', session);
-
     if (!session.client_reference_id) {
       console.error(`No client reference ID found for session ${session.id}`);
       return Response.json({ error: 'Invalid session' }, { status: 400 });
     }
 
-    // Get the user from the client reference ID
+    // get the user from the client reference ID
     const user = await db.user.findUnique({
       where: { id: session.client_reference_id },
       include: { subscriptions: true },
@@ -85,19 +84,37 @@ export const POST = async (req: Request) => {
         subscription.items.data[0].price.id,
       );
 
-      await db.subscription.create({
-        data: {
-          userId: user.id,
-          stripeSubscriptionId: subscription.id,
-          planName,
-          billingPeriod,
-          status: mapStripeStatusToSubscriptionStatus(subscription.status),
-          currentPeriodEnd,
-        },
-      });
+      // get the credit amount for this plan
+      const creditAmount = getCreditAmountFromPlanName(planName);
+
+      // create subscription and add credits in a transaction
+      await db.$transaction([
+        db.subscription.create({
+          data: {
+            userId: user.id,
+            stripeSubscriptionId: subscription.id,
+            planName,
+            billingPeriod,
+            status: mapStripeStatusToSubscriptionStatus(subscription.status),
+            currentPeriodEnd,
+          },
+        }),
+        db.creditTransaction.create({
+          data: {
+            userId: user.id,
+            amount: creditAmount,
+            type: CreditTransactionType.PURCHASE,
+            reference: subscription.id,
+          },
+        }),
+        db.user.update({
+          where: { id: user.id },
+          data: { credits: { increment: creditAmount } },
+        }),
+      ]);
     } else {
-      // Handle one-time credit purchase
-      // Verify user has an active subscription
+      // handle one-time credit purchase
+      // verify user has an active subscription
       const hasActiveSubscription = user.subscriptions.some(
         (sub: Subscription) => sub.status === SubscriptionStatus.ACTIVE,
       );
@@ -116,7 +133,7 @@ export const POST = async (req: Request) => {
         session.id,
       );
 
-      // Process all credit purchases in parallel
+      // process all credit purchases in parallel
       await Promise.all(
         lineItems.data.map(async (item) => {
           const creditAmount = getCreditAmountFromPriceId(item.price?.id);

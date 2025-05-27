@@ -13,14 +13,21 @@ import {
   OPENAI_MODEL_GPT_IMAGE_OPTIONS,
   REFERENCE_IMAGES,
   INSTAGRAM_CAPTION_PROMPT,
+  ACTIONS,
 } from '@/constants';
 import { db } from '@/lib/prisma';
-import { ColoringImage, GenerationType } from '@prisma/client';
+import {
+  ColoringImage,
+  GenerationType,
+  CreditTransactionType,
+} from '@prisma/client';
 import { getRandomDescription } from '@/utils/random';
 import generatePDFNode from '@/utils/generatePDFNode';
 import streamToBuffer from '@/utils/streamToBuffer';
 import fetchSvg from '@/utils/fetchSvg';
 import { sendEmail } from '@/utils/email';
+import { showAuthButtonsFlag } from '@/flags';
+import { getUserId } from '@/app/actions/user';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -92,23 +99,31 @@ const cleanUpDescription = async (roughUserDescription: string) => {
   return response.choices[0].message.content;
 };
 
-export const createColoringImage = async (formData: FormData) => {
-  const rawFormData = {
-    description: (formData.get('description') as string) || '',
-    generationType:
-      (formData.get('generationType') as GenerationType) || undefined,
-  };
+type CreateColoringImageResult =
+  | Partial<ColoringImage>
+  | { error: string; credits: number };
 
-  // Clean up the user's description
-  const cleanedUpUserDescription = await cleanUpDescription(
-    rawFormData.description,
-  );
+const isErrorResult = (
+  result: CreateColoringImageResult,
+): result is { error: string; credits: number } => 'error' in result;
+
+const isColoringImage = (
+  result: CreateColoringImageResult,
+): result is Partial<ColoringImage> => !isErrorResult(result);
+
+const generateColoringImageWithMetadata = async (
+  description: string,
+  userId?: string,
+  generationType?: GenerationType,
+) => {
+  // clean up the user's description
+  const cleanedUpUserDescription = await cleanUpDescription(description);
 
   // DEBUG:
   // eslint-disable-next-line no-console
   console.log('cleanedUpUserDescription', cleanedUpUserDescription);
 
-  // Generate the coloring image
+  // generate the coloring image
   const { url: imageUrl, tempFileName } = await generateColoringImage(
     cleanedUpUserDescription as string,
   );
@@ -161,11 +176,12 @@ export const createColoringImage = async (formData: FormData) => {
       description: generateImageMetadataResponseContent.description,
       alt: generateImageMetadataResponseContent.alt,
       tags: generateImageMetadataResponseContent.tags,
-      generationType: rawFormData.generationType || GenerationType.USER,
+      generationType: generationType || GenerationType.USER,
+      userId,
     },
   });
 
-  // generate qr code for the coloring image
+  // generate QR code for the coloring image
   const qrCodeSvg = await QRCode.toString(
     `https://chunkycrayon.com?utm_source=${coloringImage.id}&utm_medium=pdf-qr-code&utm_campaign=coloring-image-pdf`,
     {
@@ -234,7 +250,7 @@ export const createColoringImage = async (formData: FormData) => {
     },
   });
 
-  // Clean up temporary file
+  // clean up temporary file
   try {
     if (tempFileName) {
       await del(tempFileName);
@@ -243,9 +259,78 @@ export const createColoringImage = async (formData: FormData) => {
     console.error('Error cleaning up temporary file:', error);
   }
 
-  revalidatePath('/');
-
   return updatedColoringImage;
+};
+
+export const createColoringImage = async (
+  formData: FormData,
+): Promise<CreateColoringImageResult> => {
+  const rawFormData = {
+    description: (formData.get('description') as string) || '',
+    generationType:
+      (formData.get('generationType') as GenerationType) || undefined,
+  };
+
+  // check if auth is enabled and user is authenticated
+  const showAuthButtons = await showAuthButtonsFlag();
+  const userId = await getUserId(ACTIONS.CREATE_COLORING_IMAGE);
+
+  if (showAuthButtons && userId) {
+    // get user's credit balance
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: { credits: true },
+    });
+
+    if (!user || user.credits < 5) {
+      return {
+        error: 'Insufficient credits',
+        credits: user?.credits || 0,
+      };
+    }
+
+    // use a transaction to deduct credits and create the coloring image
+    const result = await db.$transaction(
+      async (tx) => {
+        // deduct credits
+        await tx.user.update({
+          where: { id: userId },
+          data: { credits: { decrement: 5 } },
+        });
+
+        // create credit transaction record
+        await tx.creditTransaction.create({
+          data: {
+            userId,
+            amount: -5,
+            type: CreditTransactionType.GENERATION,
+          },
+        });
+
+        return generateColoringImageWithMetadata(
+          rawFormData.description,
+          userId,
+          rawFormData.generationType,
+        );
+      },
+      {
+        timeout: 120000, // 2 minutes in milliseconds
+      },
+    );
+
+    revalidatePath('/');
+    return result;
+  }
+
+  // if auth is not enabled or user is not authenticated, proceed with original flow
+  const result = await generateColoringImageWithMetadata(
+    rawFormData.description,
+    undefined,
+    rawFormData.generationType,
+  );
+
+  revalidatePath('/');
+  return result;
 };
 
 export const getColoringImage = async (
@@ -341,9 +426,10 @@ export const generateRandomColoringImage = async (
 
   const coloringImage = await createColoringImage(formData);
 
-  if (!coloringImage) {
+  if (!isColoringImage(coloringImage)) {
     throw new Error(
-      `Error generating ${generationType.toLowerCase()} coloring image`,
+      coloringImage.error ||
+        `Error generating ${generationType.toLowerCase()} coloring image`,
     );
   }
 

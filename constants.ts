@@ -138,6 +138,7 @@ Important: Write in a natural, human-like way that resonates with our audience. 
 export const FREE_CREDITS = 15;
 
 export const ACTIONS = {
+  CREATE_COLORING_IMAGE: 'create coloring image',
   GET_CURRENT_USER: 'get the current user',
   GET_USER_CREDITS: 'get the user credits',
   GET_USER_SUBSCRIPTIONS: 'get the user subscriptions',
