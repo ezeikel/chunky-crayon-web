@@ -44,6 +44,11 @@ const CreateColoringPageForm = ({
 
           const coloringImage = await createColoringImage(formData);
 
+          if ('error' in coloringImage) {
+            console.error(coloringImage.error);
+            return;
+          }
+
           router.push(`/coloring-image/${coloringImage.id}`);
         }}
         ref={formRef}
