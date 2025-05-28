@@ -9,6 +9,7 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 import cn from '@/utils/cn';
 import Header from '@/components/Header/Header';
 import { Toaster } from '@/components/ui/toaster';
+import BasicHeader from '@/components/BasicHeader/BasicHeader';
 import { tondo, rooneySans } from '@/fonts';
 import '@/global.css';
 import Providers from './providers';
@@ -95,7 +96,7 @@ export default function RootLayout({
         )}
       >
         <Providers>
-          <Suspense fallback={<div>Loading header...</div>}>
+          <Suspense fallback={<BasicHeader />}>
             <Header />
           </Suspense>
           <main className="flex flex-col min-h-[calc(100vh-72px)] [&>div]:flex-1">
