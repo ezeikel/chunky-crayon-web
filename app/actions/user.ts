@@ -2,7 +2,7 @@
 
 import { auth } from '@/auth';
 import { ACTIONS } from '@/constants';
-import { db, User } from '@/lib/prisma';
+import { db, Prisma } from '@/lib/prisma';
 
 export const getUserId = async (action?: string) => {
   const session = await auth();
@@ -24,7 +24,25 @@ export const getUserId = async (action?: string) => {
   return userId;
 };
 
-export const getCurrentUser = async (): Promise<Partial<User> | null> => {
+export const getCurrentUser = async (): Promise<Prisma.UserGetPayload<{
+  select: {
+    id: true;
+    email: true;
+    name: true;
+    stripeCustomerId: true;
+    credits: true;
+    subscriptions: {
+      select: {
+        id: true;
+        stripeSubscriptionId: true;
+        planName: true;
+        billingPeriod: true;
+        status: true;
+        currentPeriodEnd: true;
+      };
+    };
+  };
+}> | null> => {
   const userId = await getUserId(ACTIONS.GET_CURRENT_USER);
 
   if (!userId) {
@@ -39,7 +57,18 @@ export const getCurrentUser = async (): Promise<Partial<User> | null> => {
       id: true,
       email: true,
       name: true,
+      stripeCustomerId: true,
       credits: true,
+      subscriptions: {
+        select: {
+          id: true,
+          stripeSubscriptionId: true,
+          planName: true,
+          billingPeriod: true,
+          status: true,
+          currentPeriodEnd: true,
+        },
+      },
     },
   });
 

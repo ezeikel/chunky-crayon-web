@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useActionState } from 'react';
 import { track } from '@vercel/analytics';
+import { toast } from 'sonner';
 import SubmitButton from '@/components/buttons/SubmitButton/SubmitButton';
 import cn from '@/utils/cn';
-import { useToast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
 import { joinColoringPageEmailList } from '@/app/actions';
 
@@ -16,7 +16,6 @@ const JoinColoringPageEmailListForm = ({
   className,
 }: JoinColoringPageEmailListFormProps) => {
   const emailInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
   // TODO: useFormState has been swapped out for useActionState in later canary versions
   const [state, joinColoringPageEmailListAction] = useActionState(
     joinColoringPageEmailList,
@@ -27,8 +26,7 @@ const JoinColoringPageEmailListForm = ({
 
   useEffect(() => {
     if (state.success) {
-      toast({
-        title: 'Success 🎉',
+      toast('Success 🎉', {
         description: 'You have successfully joined the email list!',
       });
 
@@ -40,14 +38,13 @@ const JoinColoringPageEmailListForm = ({
         emailInputRef.current.value = '';
       }
     } else if (state.error) {
-      toast({
-        title: 'Something went wrong 😢',
+      toast.error('Something went wrong 😢', {
         description: 'Failed to join the email list. Please try again.',
       });
 
       console.error({ error: state.error });
     }
-  }, [state.success, state.error, state.email, toast]);
+  }, [state.success, state.error, state.email]);
 
   return (
     <div

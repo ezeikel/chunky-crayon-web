@@ -8,7 +8,7 @@ import PlausibleProvider from 'next-plausible';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 import cn from '@/utils/cn';
 import Header from '@/components/Header/Header';
-import { Toaster } from '@/components/ui/toaster';
+import { Toaster } from '@/components/ui/sonner';
 import BasicHeader from '@/components/BasicHeader/BasicHeader';
 import { tondo, rooneySans } from '@/fonts';
 import '@/global.css';

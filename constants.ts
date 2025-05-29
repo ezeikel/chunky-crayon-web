@@ -1,3 +1,5 @@
+import { PlanName } from '@prisma/client';
+
 export const CREATE_COLORING_PAGE_PROMPT_PRE_PROMPT = `Create a detailed JSON prompt suitable for DALL-E 3 to generate a simple line drawing image for a coloring book. The image should depict a kid-friendly scene inspired by the following description: '`;
 
 const COPYRIGHTED_CHARACTER_DESCRIPTION = `". If the description includes a copyrighted name like Spiderman, then describe Spiderman's physical appearance in detail instead. Describe his costume, his spider logo, his web shooters, his mask, his eyes, his muscles, his webbing etc. Specify that this must be in black and white only and simplify any complex details so that the image remains simple and avoids any complicated shapes or patterns. Update the original description replacing the copyrighted character name with this detailed description of the character. If the description does not include any copyrighted characters, then please ignore this step`;
@@ -155,7 +157,8 @@ export const ACTIONS = {
 
 export type PlanInterval = 'monthly' | 'annual';
 
-export type Plan = {
+export type SubscriptionPlan = {
+  key: PlanName;
   name: string;
   tagline: string;
   price: string; // e.g '£7.99'
@@ -167,9 +170,10 @@ export type Plan = {
   mostPopular?: boolean;
 };
 
-export const PRICING: Record<PlanInterval, Plan[]> = {
+export const SUBSCRIPTION_PLANS: Record<PlanInterval, SubscriptionPlan[]> = {
   monthly: [
     {
+      key: PlanName.CRAYON,
       name: 'Crayon Plan',
       tagline: 'Start your coloring adventure',
       price: '£7.99',
@@ -186,6 +190,7 @@ export const PRICING: Record<PlanInterval, Plan[]> = {
         .NEXT_PUBLIC_STRIPE_PRICE_CRAYON_MONTHLY as string,
     },
     {
+      key: PlanName.RAINBOW,
       name: 'Rainbow Plan',
       tagline: 'Fun for the whole family',
       price: '£13.99',
@@ -202,6 +207,7 @@ export const PRICING: Record<PlanInterval, Plan[]> = {
       mostPopular: true,
     },
     {
+      key: PlanName.MASTERPIECE,
       name: 'Masterpiece Plan',
       tagline: 'For color enthusiasts',
       price: '£24.99',
@@ -217,6 +223,7 @@ export const PRICING: Record<PlanInterval, Plan[]> = {
         .NEXT_PUBLIC_STRIPE_PRICE_MASTERPIECE_MONTHLY as string,
     },
     {
+      key: PlanName.STUDIO,
       name: 'Studio Plan',
       tagline: 'For super creators and small businesses',
       price: '£59.99',
@@ -233,6 +240,7 @@ export const PRICING: Record<PlanInterval, Plan[]> = {
   ],
   annual: [
     {
+      key: PlanName.CRAYON,
       name: 'Crayon Plan',
       tagline: 'Start your coloring adventure',
       price: '£79.99',
@@ -249,6 +257,7 @@ export const PRICING: Record<PlanInterval, Plan[]> = {
         .NEXT_PUBLIC_STRIPE_PRICE_CRAYON_ANNUAL as string,
     },
     {
+      key: PlanName.RAINBOW,
       name: 'Rainbow Plan',
       tagline: 'Fun for the whole family',
       price: '£139.99',
@@ -265,6 +274,7 @@ export const PRICING: Record<PlanInterval, Plan[]> = {
       mostPopular: true,
     },
     {
+      key: PlanName.MASTERPIECE,
       name: 'Masterpiece Plan',
       tagline: 'For color enthusiasts',
       price: '£249.99',
@@ -280,6 +290,7 @@ export const PRICING: Record<PlanInterval, Plan[]> = {
         .NEXT_PUBLIC_STRIPE_PRICE_MASTERPIECE_ANNUAL as string,
     },
     {
+      key: PlanName.STUDIO,
       name: 'Studio Plan',
       tagline: 'For super creators and small businesses',
       price: '£599.00',
@@ -297,3 +308,31 @@ export const PRICING: Record<PlanInterval, Plan[]> = {
 };
 
 export const STRIPE_API_VERSION = '2025-04-30.basil';
+
+export type CreditPack = {
+  name: string;
+  credits: number;
+  price: string;
+  stripePriceEnv: string;
+};
+
+export const CREDIT_PACKS: CreditPack[] = [
+  {
+    name: '100 Credits Pack',
+    credits: 100,
+    price: '£3.00',
+    stripePriceEnv: process.env.STRIPE_PRICE_CREDITS_100 as string,
+  },
+  {
+    name: '500 Credits Pack',
+    credits: 500,
+    price: '£12.00',
+    stripePriceEnv: process.env.STRIPE_PRICE_CREDITS_500 as string,
+  },
+  {
+    name: '1,000 Credits Pack',
+    credits: 1000,
+    price: '£20.00',
+    stripePriceEnv: process.env.STRIPE_PRICE_CREDITS_1000 as string,
+  },
+];

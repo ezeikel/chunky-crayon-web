@@ -1,8 +1,12 @@
 'use server';
 
 import { headers } from 'next/headers';
+import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
+import { PlanName, SubscriptionStatus } from '@prisma/client';
+import { mapStripeStatusToSubscriptionStatus } from '@/utils/stripe';
+import Stripe from 'stripe';
 import { getUserId } from './user';
 
 export const createCheckoutSession = async (
@@ -64,6 +68,10 @@ export const createCheckoutSession = async (
     customer_email: subscription ? undefined : user.email,
   });
 
+  // update relevant paths
+  revalidatePath('/account/billing');
+  revalidatePath('/pricing');
+
   return {
     id: stripeSession.id,
   };
@@ -97,6 +105,9 @@ export const createCustomerPortalSession = async () => {
     customer: user.stripeCustomerId,
     return_url: `${origin}/account/billing`,
   });
+
+  // update relevant paths
+  revalidatePath('/account/billing');
 
   return {
     url: portalSession.url,
@@ -133,6 +144,106 @@ export const getSubscriptionDetails = async (stripeSubscriptionId: string) => {
     };
   } catch (error) {
     console.error('Error fetching subscription details from Stripe:', error);
+    return null;
+  }
+};
+
+export const changeSubscription = async ({
+  currentPlanName,
+  newPlanName,
+  newPriceId,
+}: {
+  currentPlanName: PlanName;
+  newPlanName: PlanName;
+  newPriceId: string;
+}) => {
+  const userId = await getUserId('change subscription');
+
+  if (!userId) {
+    return null;
+  }
+
+  const user = await db.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      stripeCustomerId: true,
+    },
+  });
+
+  if (!user?.stripeCustomerId) {
+    console.error('No subscription found for this user.');
+    return null;
+  }
+
+  const subscription = await db.subscription.findFirst({
+    where: {
+      user: {
+        id: userId,
+      },
+      status: SubscriptionStatus.ACTIVE,
+      planName: currentPlanName,
+    },
+    select: {
+      stripeSubscriptionId: true,
+    },
+  });
+
+  if (!subscription) {
+    console.error('No subscription found for this user.');
+    return null;
+  }
+
+  try {
+    const stripeSubscription = await stripe.subscriptions.retrieve(
+      subscription.stripeSubscriptionId,
+    );
+
+    const updatedSubscription = (await stripe.subscriptions.update(
+      subscription.stripeSubscriptionId,
+      {
+        items: [
+          {
+            id: stripeSubscription.items.data[0].id,
+            price: newPriceId,
+          },
+        ],
+        proration_behavior: 'create_prorations',
+      },
+    )) as Stripe.Subscription;
+
+    // Get the current period end from the first subscription item
+    const firstItem = updatedSubscription.items.data[0];
+    const currentPeriodEnd = new Date(firstItem.current_period_end * 1000);
+
+    // Update the database subscription
+    await db.subscription.update({
+      where: {
+        stripeSubscriptionId: subscription.stripeSubscriptionId,
+      },
+      data: {
+        planName: newPlanName,
+        currentPeriodEnd,
+        status: mapStripeStatusToSubscriptionStatus(updatedSubscription.status),
+      },
+    });
+
+    // update relevant paths
+    revalidatePath('/account/billing');
+    revalidatePath('/pricing');
+
+    return {
+      success: true,
+      message: `Successfully switched to ${newPlanName}!`,
+      subscription: {
+        id: updatedSubscription.id,
+        status: updatedSubscription.status,
+        currentPeriodEnd,
+      },
+    };
+  } catch (error) {
+    console.error('Error updating subscription:', error);
     return null;
   }
 };

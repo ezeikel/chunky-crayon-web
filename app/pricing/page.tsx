@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
-import { PRICING, PlanInterval } from '@/constants';
+import { SUBSCRIPTION_PLANS, PlanInterval } from '@/constants';
 import {
   Card,
   CardHeader,
@@ -27,7 +27,7 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_KEY as string);
 const PricingPage = () => {
   const [interval, setInterval] = useState<PlanInterval>('monthly');
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-  const plans = PRICING[interval];
+  const plans = SUBSCRIPTION_PLANS[interval];
 
   const handlePurchase = async (plan: any) => {
     setLoadingPlan(plan.name);
