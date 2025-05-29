@@ -213,11 +213,10 @@ export const changeSubscription = async ({
       },
     )) as Stripe.Subscription;
 
-    // Get the current period end from the first subscription item
+    // get the current period end from the first subscription item
     const firstItem = updatedSubscription.items.data[0];
     const currentPeriodEnd = new Date(firstItem.current_period_end * 1000);
 
-    // Update the database subscription
     await db.subscription.update({
       where: {
         stripeSubscriptionId: subscription.stripeSubscriptionId,

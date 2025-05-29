@@ -1,3 +1,4 @@
+import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { db } from '@/lib/prisma';
@@ -123,6 +124,9 @@ export const POST = async (req: Request) => {
         console.error(
           `User ${user.id} attempted to purchase credits without an active subscription`,
         );
+
+        // TODO: send email to user and refund the purchase?
+
         return Response.json(
           { error: 'Active subscription required for credit purchases' },
           { status: 400 },
@@ -137,6 +141,7 @@ export const POST = async (req: Request) => {
       await Promise.all(
         lineItems.data.map(async (item) => {
           const creditAmount = getCreditAmountFromPriceId(item.price?.id);
+
           if (creditAmount) {
             await db.$transaction([
               db.creditTransaction.create({
@@ -187,6 +192,10 @@ export const POST = async (req: Request) => {
   } else {
     console.error(`Unhandled event type ${stripeEvent.type}`);
   }
+
+  // update relevant paths
+  revalidatePath('/account/billing');
+  revalidatePath('/pricing');
 
   return Response.json(
     {

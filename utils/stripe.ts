@@ -71,11 +71,11 @@ export const getCreditAmountFromPriceId = (priceId?: string): number | null => {
   if (!priceId) return null;
 
   switch (priceId) {
-    case process.env.STRIPE_PRICE_CREDITS_1000:
+    case process.env.NEXT_PUBLIC_STRIPE_PRICE_CREDITS_1000:
       return 1000;
-    case process.env.STRIPE_PRICE_CREDITS_500:
+    case process.env.NEXT_PUBLIC_STRIPE_PRICE_CREDITS_500:
       return 500;
-    case process.env.STRIPE_PRICE_CREDITS_100:
+    case process.env.NEXT_PUBLIC_STRIPE_PRICE_CREDITS_100:
       return 100;
     default:
       return null;

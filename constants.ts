@@ -321,18 +321,18 @@ export const CREDIT_PACKS: CreditPack[] = [
     name: '100 Credits Pack',
     credits: 100,
     price: '£3.00',
-    stripePriceEnv: process.env.STRIPE_PRICE_CREDITS_100 as string,
+    stripePriceEnv: process.env.NEXT_PUBLIC_STRIPE_PRICE_CREDITS_100 as string,
   },
   {
     name: '500 Credits Pack',
     credits: 500,
     price: '£12.00',
-    stripePriceEnv: process.env.STRIPE_PRICE_CREDITS_500 as string,
+    stripePriceEnv: process.env.NEXT_PUBLIC_STRIPE_PRICE_CREDITS_500 as string,
   },
   {
     name: '1,000 Credits Pack',
     credits: 1000,
     price: '£20.00',
-    stripePriceEnv: process.env.STRIPE_PRICE_CREDITS_1000 as string,
+    stripePriceEnv: process.env.NEXT_PUBLIC_STRIPE_PRICE_CREDITS_1000 as string,
   },
 ];
