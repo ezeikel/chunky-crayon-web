@@ -96,3 +96,29 @@ export const getCreditAmountFromPlanName = (planName: PlanName): number => {
       throw new Error(`Unknown plan name: ${planName}`);
   }
 };
+
+export const calculateProratedCredits = (
+  currentPlanCredits: number,
+  newPlanCredits: number,
+  daysRemainingInPeriod: number,
+  totalDaysInPeriod: number,
+  isUpgrade: boolean,
+): number => {
+  if (!isUpgrade) {
+    return 0;
+  }
+
+  const creditDifference = newPlanCredits - currentPlanCredits;
+  return Math.floor(
+    (creditDifference * daysRemainingInPeriod) / totalDaysInPeriod,
+  );
+};
+
+export const getDaysInPeriod = (billingPeriod: 'monthly' | 'annual'): number =>
+  billingPeriod === 'monthly' ? 30 : 365;
+
+export const calculateDaysRemaining = (currentPeriodEnd: Date): number => {
+  const now = new Date();
+  const diffTime = currentPeriodEnd.getTime() - now.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+};

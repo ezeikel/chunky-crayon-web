@@ -4,8 +4,18 @@ import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
-import { PlanName, SubscriptionStatus } from '@prisma/client';
-import { mapStripeStatusToSubscriptionStatus } from '@/utils/stripe';
+import {
+  PlanName,
+  SubscriptionStatus,
+  CreditTransactionType,
+} from '@prisma/client';
+import {
+  calculateDaysRemaining,
+  calculateProratedCredits,
+  getDaysInPeriod,
+  mapStripeStatusToSubscriptionStatus,
+} from '@/utils/stripe';
+import { PLAN_CREDITS } from '@/constants';
 import Stripe from 'stripe';
 import { getUserId } from './user';
 
@@ -169,6 +179,7 @@ export const changeSubscription = async ({
     },
     select: {
       stripeCustomerId: true,
+      credits: true,
     },
   });
 
@@ -187,6 +198,8 @@ export const changeSubscription = async ({
     },
     select: {
       stripeSubscriptionId: true,
+      currentPeriodEnd: true,
+      billingPeriod: true,
     },
   });
 
@@ -217,6 +230,47 @@ export const changeSubscription = async ({
     const firstItem = updatedSubscription.items.data[0];
     const currentPeriodEnd = new Date(firstItem.current_period_end * 1000);
 
+    // calculate prorated credits
+    const daysRemaining = calculateDaysRemaining(subscription.currentPeriodEnd);
+    const totalDays = getDaysInPeriod(
+      subscription.billingPeriod.toLowerCase() as 'monthly' | 'annual',
+    );
+    const currentPlanCredits =
+      PLAN_CREDITS[currentPlanName][subscription.billingPeriod];
+    const newPlanCredits =
+      PLAN_CREDITS[newPlanName][subscription.billingPeriod];
+
+    const isUpgrade = newPlanCredits > currentPlanCredits;
+
+    const proratedCredits = calculateProratedCredits(
+      currentPlanCredits,
+      newPlanCredits,
+      daysRemaining,
+      totalDays,
+      isUpgrade,
+    );
+
+    if (isUpgrade && proratedCredits > 0) {
+      // create a transaction for the prorated credits
+      await db.creditTransaction.create({
+        data: {
+          userId,
+          amount: proratedCredits,
+          type: CreditTransactionType.ADJUSTMENT,
+          reference: `subscription_change_${subscription.stripeSubscriptionId}`,
+        },
+      });
+
+      await db.user.update({
+        where: { id: userId },
+        data: {
+          credits: {
+            increment: proratedCredits,
+          },
+        },
+      });
+    }
+
     await db.subscription.update({
       where: {
         stripeSubscriptionId: subscription.stripeSubscriptionId,
@@ -240,6 +294,17 @@ export const changeSubscription = async ({
         status: updatedSubscription.status,
         currentPeriodEnd,
       },
+      credits: isUpgrade
+        ? {
+            added: proratedCredits,
+            newTotal: user.credits + proratedCredits,
+          }
+        : {
+            added: 0,
+            newTotal: user.credits,
+            message:
+              'Your current credits will remain until the end of your billing period',
+          },
     };
   } catch (error) {
     console.error('Error updating subscription:', error);

@@ -1,4 +1,4 @@
-import { PlanName } from '@prisma/client';
+import { PlanName, BillingPeriod } from '@prisma/client';
 
 export const CREATE_COLORING_PAGE_PROMPT_PRE_PROMPT = `Create a detailed JSON prompt suitable for DALL-E 3 to generate a simple line drawing image for a coloring book. The image should depict a kid-friendly scene inspired by the following description: '`;
 
@@ -170,6 +170,31 @@ export type SubscriptionPlan = {
   mostPopular?: boolean;
 };
 
+export const PLAN_CREDITS = {
+  [PlanName.CRAYON]: {
+    [BillingPeriod.MONTHLY]: 250,
+    [BillingPeriod.ANNUAL]: 3000,
+  },
+  [PlanName.RAINBOW]: {
+    [BillingPeriod.MONTHLY]: 500,
+    [BillingPeriod.ANNUAL]: 6000,
+  },
+  [PlanName.MASTERPIECE]: {
+    [BillingPeriod.MONTHLY]: 1000,
+    [BillingPeriod.ANNUAL]: 12000,
+  },
+  [PlanName.STUDIO]: {
+    [BillingPeriod.MONTHLY]: 5000,
+    [BillingPeriod.ANNUAL]: 60000,
+  },
+} as const;
+
+export const CREDIT_PACK_AMOUNTS = {
+  CREDITS_100: 100,
+  CREDITS_500: 500,
+  CREDITS_1000: 1000,
+} as const;
+
 export const SUBSCRIPTION_PLANS: Record<PlanInterval, SubscriptionPlan[]> = {
   monthly: [
     {
@@ -177,7 +202,7 @@ export const SUBSCRIPTION_PLANS: Record<PlanInterval, SubscriptionPlan[]> = {
       name: 'Crayon Plan',
       tagline: 'Start your coloring adventure',
       price: '£7.99',
-      credits: '250 credits/month',
+      credits: `${PLAN_CREDITS[PlanName.CRAYON][BillingPeriod.MONTHLY]} credits/month`,
       features: [
         'Create coloring pages from text prompts',
         'Create coloring pages with words, names, and numbers',
@@ -194,7 +219,7 @@ export const SUBSCRIPTION_PLANS: Record<PlanInterval, SubscriptionPlan[]> = {
       name: 'Rainbow Plan',
       tagline: 'Fun for the whole family',
       price: '£13.99',
-      credits: '500 credits/month',
+      credits: `${PLAN_CREDITS[PlanName.RAINBOW][BillingPeriod.MONTHLY]} credits/month`,
       features: [
         'All Crayon Plan features',
         'Advanced editing features',
@@ -211,7 +236,7 @@ export const SUBSCRIPTION_PLANS: Record<PlanInterval, SubscriptionPlan[]> = {
       name: 'Masterpiece Plan',
       tagline: 'For color enthusiasts',
       price: '£24.99',
-      credits: '1,000 credits/month',
+      credits: `${PLAN_CREDITS[PlanName.MASTERPIECE][BillingPeriod.MONTHLY]} credits/month`,
       features: [
         'All Rainbow Plan features',
         'Bulk generation',
@@ -227,7 +252,7 @@ export const SUBSCRIPTION_PLANS: Record<PlanInterval, SubscriptionPlan[]> = {
       name: 'Studio Plan',
       tagline: 'For super creators and small businesses',
       price: '£59.99',
-      credits: '5,000 credits/month',
+      credits: `${PLAN_CREDITS[PlanName.STUDIO][BillingPeriod.MONTHLY]} credits/month`,
       features: [
         'All Masterpiece Plan features',
         'Rollover up to 3 months of credits',
@@ -244,7 +269,7 @@ export const SUBSCRIPTION_PLANS: Record<PlanInterval, SubscriptionPlan[]> = {
       name: 'Crayon Plan',
       tagline: 'Start your coloring adventure',
       price: '£79.99',
-      credits: '250 credits/month',
+      credits: `${PLAN_CREDITS[PlanName.CRAYON][BillingPeriod.ANNUAL]} credits/year`,
       features: [
         'Create coloring pages from text prompts',
         'Create coloring pages with words, names, and numbers',
@@ -261,7 +286,7 @@ export const SUBSCRIPTION_PLANS: Record<PlanInterval, SubscriptionPlan[]> = {
       name: 'Rainbow Plan',
       tagline: 'Fun for the whole family',
       price: '£139.99',
-      credits: '500 credits/month',
+      credits: `${PLAN_CREDITS[PlanName.RAINBOW][BillingPeriod.ANNUAL]} credits/year`,
       features: [
         'All Crayon Plan features',
         'Advanced editing features',
@@ -278,7 +303,7 @@ export const SUBSCRIPTION_PLANS: Record<PlanInterval, SubscriptionPlan[]> = {
       name: 'Masterpiece Plan',
       tagline: 'For color enthusiasts',
       price: '£249.99',
-      credits: '1,000 credits/month',
+      credits: `${PLAN_CREDITS[PlanName.MASTERPIECE][BillingPeriod.ANNUAL]} credits/year`,
       features: [
         'All Rainbow Plan features',
         'Bulk generation',
@@ -294,7 +319,7 @@ export const SUBSCRIPTION_PLANS: Record<PlanInterval, SubscriptionPlan[]> = {
       name: 'Studio Plan',
       tagline: 'For super creators and small businesses',
       price: '£599.00',
-      credits: '5,000 credits/month',
+      credits: `${PLAN_CREDITS[PlanName.STUDIO][BillingPeriod.ANNUAL]} credits/year`,
       features: [
         'All Masterpiece Plan features',
         'Rollover up to 3 months of credits',
@@ -310,6 +335,7 @@ export const SUBSCRIPTION_PLANS: Record<PlanInterval, SubscriptionPlan[]> = {
 export const STRIPE_API_VERSION = '2025-04-30.basil';
 
 export type CreditPack = {
+  key: keyof typeof CREDIT_PACK_AMOUNTS;
   name: string;
   credits: number;
   price: string;
@@ -318,20 +344,23 @@ export type CreditPack = {
 
 export const CREDIT_PACKS: CreditPack[] = [
   {
+    key: 'CREDITS_100',
     name: '100 Credits Pack',
-    credits: 100,
+    credits: CREDIT_PACK_AMOUNTS.CREDITS_100,
     price: '£3.00',
     stripePriceEnv: process.env.NEXT_PUBLIC_STRIPE_PRICE_CREDITS_100 as string,
   },
   {
+    key: 'CREDITS_500',
     name: '500 Credits Pack',
-    credits: 500,
+    credits: CREDIT_PACK_AMOUNTS.CREDITS_500,
     price: '£12.00',
     stripePriceEnv: process.env.NEXT_PUBLIC_STRIPE_PRICE_CREDITS_500 as string,
   },
   {
+    key: 'CREDITS_1000',
     name: '1,000 Credits Pack',
-    credits: 1000,
+    credits: CREDIT_PACK_AMOUNTS.CREDITS_1000,
     price: '£20.00',
     stripePriceEnv: process.env.NEXT_PUBLIC_STRIPE_PRICE_CREDITS_1000 as string,
   },
