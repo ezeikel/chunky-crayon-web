@@ -18,7 +18,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  serverExternalPackages: ['@react-pdf/renderer'],
+  serverExternalPackages: [
+    '@react-pdf/renderer',
+    'playwright',
+    'playwright-core',
+    '@playwright/test',
+  ],
   experimental: {
     ppr: true,
   },

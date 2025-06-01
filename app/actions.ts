@@ -2,9 +2,9 @@
 
 import { put, del } from '@vercel/blob';
 import { revalidatePath } from 'next/cache';
+import { after } from 'next/server';
 import OpenAI from 'openai';
 import QRCode from 'qrcode';
-import potrace from 'oslllo-potrace';
 import sharp from 'sharp';
 import mailchimp from '@mailchimp/mailchimp_marketing';
 import { Readable } from 'stream';
@@ -28,6 +28,7 @@ import fetchSvg from '@/utils/fetchSvg';
 import { sendEmail } from '@/utils/email';
 import { showAuthButtonsFlag } from '@/flags';
 import { getUserId } from '@/app/actions/user';
+import { checkSvgImage, retraceImage, traceImage } from '@/utils/traceImage';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -195,26 +196,14 @@ const generateColoringImageWithMetadata = async (
   const response = await fetch(imageUrl);
   const imageBuffer = await response.arrayBuffer();
 
-  // convert png to svg using Potrace
-  const pngToSvg = async (buffer: ArrayBuffer): Promise<string> =>
-    new Promise((resolve, reject) => {
-      sharp(buffer)
-        .toFormat('png')
-        .toBuffer(async (err, pngBuffer) => {
-          if (err) {
-            reject(err);
-          } else {
-            const traced = await potrace(pngBuffer).trace();
-            resolve(traced);
-          }
-        });
-    });
-
-  const svg = await pngToSvg(imageBuffer);
+  const svg = await traceImage(imageBuffer);
   const imageSvgBuffer = Buffer.from(svg);
 
   // save image webp to blob storage
   const imageFileName = `uploads/coloring-images/${coloringImage.id}/image.webp`;
+
+  // convert PNG buffer to WebP before uploading
+  const webpBuffer = await sharp(Buffer.from(imageBuffer)).webp().toBuffer();
 
   // save image svg to blob storage
   const svgFileName = `uploads/coloring-images/${coloringImage.id}/image.svg`;
@@ -227,7 +216,7 @@ const generateColoringImageWithMetadata = async (
     { url: imageSvgBlobUrl },
     { url: qrCodeSvgBlobUrl },
   ] = await Promise.all([
-    put(imageFileName, imageBuffer, {
+    put(imageFileName, webpBuffer, {
       access: 'public',
     }),
     put(svgFileName, imageSvgBuffer, {
@@ -330,6 +319,19 @@ export const createColoringImage = async (
   );
 
   revalidatePath('/');
+
+  after(async () => {
+    if (!result.url || !result.svgUrl) {
+      return;
+    }
+
+    const { isValid } = await checkSvgImage(result.svgUrl);
+
+    if (!isValid) {
+      await retraceImage(result.id, result.url);
+    }
+  });
+
   return result;
 };
 
