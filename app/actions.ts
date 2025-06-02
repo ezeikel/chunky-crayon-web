@@ -307,6 +307,18 @@ export const createColoringImage = async (
       },
     );
 
+    after(async () => {
+      if (!result.url || !result.svgUrl) {
+        return;
+      }
+
+      const { isValid } = await checkSvgImage(result.svgUrl);
+
+      if (!isValid) {
+        await retraceImage(result.id, result.url);
+      }
+    });
+
     revalidatePath('/');
     return result;
   }
@@ -317,8 +329,6 @@ export const createColoringImage = async (
     undefined,
     rawFormData.generationType,
   );
-
-  revalidatePath('/');
 
   after(async () => {
     if (!result.url || !result.svgUrl) {
@@ -332,6 +342,7 @@ export const createColoringImage = async (
     }
   });
 
+  revalidatePath('/');
   return result;
 };
 

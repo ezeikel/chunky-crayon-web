@@ -1,5 +1,6 @@
 import { put } from '@vercel/blob';
-import { chromium } from '@playwright/test';
+import { chromium } from 'playwright';
+import chromiumPkg from '@sparticuz/chromium';
 import OpenAI from 'openai';
 import { z } from 'zod';
 import { zodResponseFormat } from 'openai/helpers/zod';
@@ -35,7 +36,7 @@ export const traceImage = async (imageBuffer: ArrayBuffer): Promise<string> => {
         if (err) {
           reject(err);
         } else {
-          const traced = await potrace(pngBuffer, {
+          const traced = await potrace(Buffer.from(pngBuffer), {
             threshold: 200,
             optimizeImage: true,
             turnPolicy: 'majority',
@@ -50,7 +51,11 @@ export const checkSvgImage = async (
   svgUrl: string,
 ): Promise<CheckSvgImageResult> => {
   // launch browser and take screenshot
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({
+    executablePath: await chromiumPkg.executablePath(),
+    headless: true,
+    args: [...chromiumPkg.args, '--no-sandbox'],
+  });
   const context = await browser.newContext();
   const page = await context.newPage();
   await page.goto(svgUrl);
