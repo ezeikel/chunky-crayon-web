@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-export const maxDuration = 600;
+export const maxDuration = 300;
 
 export const OPTIONS = () =>
   new Response(null, {
