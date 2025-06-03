@@ -85,9 +85,4 @@ const syncBlobStorage = async () => {
   console.log('✅ Sync complete');
 };
 
-syncBlobStorage().catch((err) => {
-  console.error('❌ Sync failed:', err);
-  process.exit(1);
-});
-
 export default syncBlobStorage;
