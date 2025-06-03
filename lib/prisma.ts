@@ -8,10 +8,10 @@ neonConfig.webSocketConstructor = ws;
 // enable querying over fetch for edge environments (Vercel)
 neonConfig.poolQueryViaFetch = true;
 
-const connectionString = process.env.POSTGRES_PRISMA_URL;
+const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
-  throw new Error('POSTGRES_PRISMA_URL is not defined');
+  throw new Error('DATABASE_URL is not defined');
 }
 
 const adapter = new PrismaNeon({ connectionString });
