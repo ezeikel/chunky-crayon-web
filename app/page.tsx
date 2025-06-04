@@ -4,6 +4,7 @@ import CreateColoringPageForm from '@/components/forms/CreateColoringPageForm/Cr
 import AllColoringPageImages from '@/components/AllColoringPageImages/AllColoringPageImages';
 import Intro from '@/components/Intro/Intro';
 import { showAuthButtonsFlag } from '@/flags';
+import { getAllColoringImages } from '@/app/actions';
 
 export const maxDuration = 150;
 
@@ -16,8 +17,14 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-const HomePage = async () => {
+const HomePage = async ({
+  searchParams,
+}: {
+  searchParams: Promise<{ show: string }>;
+}) => {
+  const { show } = await searchParams;
   const showAuthButtons = (await showAuthButtonsFlag()) as boolean;
+  const images = await getAllColoringImages(show);
 
   return (
     <PageWrap className='bg-gradient-to-br from-[#FFF2E6] to-[#FFE6CC]" items-center gap-y-16'>
@@ -28,7 +35,7 @@ const HomePage = async () => {
           showAuthButtons={showAuthButtons}
         />
       </div>
-      <AllColoringPageImages />
+      <AllColoringPageImages images={images} />
     </PageWrap>
   );
 };

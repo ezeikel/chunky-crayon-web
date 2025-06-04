@@ -24,7 +24,7 @@ const Intro = ({ className }: IntroProps) => (
       </Balancer>
     </h2>
     <p className="text-2xl text-[#A6A6A6] mb-8">
-      From vibrant coloring pages to imaginative adventures, Chunky Crayon
+      From vibrant colouring pages to imaginative adventures, Chunky Crayon
       transforms creativity into pure joy.
     </p>
     <JoinColoringPageEmailListForm className="max-w-[429px]" />

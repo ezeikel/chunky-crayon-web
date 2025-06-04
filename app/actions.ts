@@ -365,16 +365,30 @@ export const getColoringImage = async (
     },
   });
 
-export const getAllColoringImages = async () =>
+const getAllColoringImagesBase = async (show = 'all', userId?: string) =>
   db.coloringImage.findMany({
+    where: {
+      OR: [{ userId }, ...(show === 'all' ? [{ userId: null }] : [])],
+    },
     select: {
       id: true,
       svgUrl: true,
+      title: true,
+      description: true,
+      userId: true,
     },
     orderBy: {
       createdAt: 'desc',
     },
   });
+
+export const getAllColoringImages = async (show = 'all') => {
+  const userId = await getUserId(ACTIONS.GET_ALL_COLORING_IMAGES);
+  return getAllColoringImagesBase(show, userId || undefined);
+};
+
+export const getAllColoringImagesStatic = async (show = 'all') =>
+  getAllColoringImagesBase(show);
 
 type JoinColoringPageEmailListState = {
   success: boolean;

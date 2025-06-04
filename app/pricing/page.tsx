@@ -68,10 +68,10 @@ const PricingPage = () => {
     <div className="max-w-5xl mx-auto py-12 px-4">
       <header className="text-center mb-16">
         <h1 className="font-tondo text-4xl font-extrabold mb-2 text-primary">
-          Plans for every coloring adventure!
+          Plans for every colouring adventure!
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          {`Whether you're a parent, a young artist, or a grown-up who loves to color, there's a Chunky Crayon plan for you. No account needed to get started!`}
+          {`Whether you're a parent, a young artist, or a grown-up who loves to colour, there's a Chunky Crayon plan for you. No account needed to get started!`}
         </p>
         <div className="flex justify-center items-center gap-4 mt-6">
           {(['monthly', 'annual'] as PlanInterval[]).map((key) => (
@@ -173,11 +173,11 @@ const PricingPage = () => {
           </li>
           <li>
             <strong>Is this for kids or adults?</strong> Both! Chunky Crayon is
-            perfect for families, kids, and grown-ups who love to color.
+            perfect for families, kids, and grown-ups who love to colour.
           </li>
           <li>
             <strong>How do I get started?</strong> Just pick a plan and start
-            creating coloring pages instantly!
+            creating colouring pages instantly!
           </li>
         </ul>
       </section>

@@ -25,7 +25,7 @@ const CreateColoringPageForm = ({
   return (
     <div className="max-w-lg flex flex-col gap-y-4 p-8 bg-white rounded-lg shadow-perfect">
       <p className="font-tondo font-bold text-xl text-orange text-center">
-        Describe a scene and let Chunky Crayon generate a unique coloring page
+        Describe a scene and let Chunky Crayon generate a unique colouring page
         for you! ✨
       </p>
       <p className="font-tondo text-[#A6A6A6] text-base leading-6 font-bold text-center">

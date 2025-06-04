@@ -153,6 +153,7 @@ export const ACTIONS = {
     'get the user subscription status by id and name',
   GET_USER_SUBSCRIPTION_STATUS_BY_ID_AND_NAME_AND_STATUS:
     'get the user subscription status by id and name and status',
+  GET_ALL_COLORING_IMAGES: 'get all coloring images',
 };
 
 export type PlanInterval = 'monthly' | 'annual';

@@ -3,11 +3,10 @@
 import { SessionProvider } from 'next-auth/react';
 import { ColoringContextProvider } from '@/contexts/coloring';
 
-const Providers = ({ children }: { children: React.ReactNode }) => {
-  // TODO: skipping auth for now
-  return <ColoringContextProvider>{children}</ColoringContextProvider>;
-
-  return <SessionProvider>{children}</SessionProvider>;
-};
+const Providers = ({ children }: { children: React.ReactNode }) => (
+  <ColoringContextProvider>
+    <SessionProvider>{children}</SessionProvider>
+  </ColoringContextProvider>
+);
 
 export default Providers;
