@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import useUser from '@/hooks/useUser';
 
 type ImageFilterToggleProps = {
   className?: string;
@@ -20,12 +21,17 @@ const ImageFilterToggle = ({ className }: ImageFilterToggleProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const show = searchParams.get('show') || 'all';
+  const { user } = useUser();
 
   const handleValueChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('show', value);
     router.push(`?${params.toString()}`);
   };
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <Select value={show} onValueChange={handleValueChange}>

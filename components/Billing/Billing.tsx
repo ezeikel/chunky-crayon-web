@@ -21,6 +21,7 @@ import {
 } from '@/app/actions/stripe';
 import { format } from 'date-fns';
 import { PlanName, Prisma } from '@prisma/client';
+import formatNumber from '@/utils/formatNumber';
 
 // make sure to call `loadStripe` outside of a component's render to avoid
 // recreating the `Stripe` object on every render
@@ -167,7 +168,7 @@ const Billing = ({ user }: BillingProps) => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Current credits: {user.credits}
+                Current credits: {formatNumber(user.credits)}
               </p>
             </CardContent>
             <CardFooter>
@@ -208,7 +209,9 @@ const Billing = ({ user }: BillingProps) => {
               <Card key={pack.name}>
                 <CardHeader>
                   <CardTitle>{pack.name}</CardTitle>
-                  <CardDescription>{pack.credits} credits</CardDescription>
+                  <CardDescription>
+                    {formatNumber(pack.credits)} credits
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold text-primary">

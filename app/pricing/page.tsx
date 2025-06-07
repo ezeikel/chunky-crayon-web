@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
-import { SUBSCRIPTION_PLANS, PlanInterval } from '@/constants';
+import { PlanInterval, SUBSCRIPTION_PLANS } from '@/constants';
 import {
   Card,
   CardHeader,
@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import cn from '@/utils/cn';
+import formatNumber from '@/utils/formatNumber';
 import { createCheckoutSession } from '../actions/stripe';
 
 const intervalLabels: Record<PlanInterval, string> = {
@@ -20,7 +21,7 @@ const intervalLabels: Record<PlanInterval, string> = {
   annual: 'Annual (save 15%)',
 };
 
-// make sure to call `loadStripe` outside of a component’s render to avoid
+// make sure to call `loadStripe` outside of a component's render to avoid
 // recreating the `Stripe` object on every render
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_KEY as string);
 
@@ -124,7 +125,7 @@ const PricingPage = () => {
                 </span>
               </CardDescription>
               <div className="text-sm text-muted-foreground mt-1">
-                {plan.credits}
+                {formatNumber(parseInt(plan.credits, 10))} credits/month
               </div>
               <div className="text-xs text-muted-foreground mt-1">
                 {plan.audience}

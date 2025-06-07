@@ -29,6 +29,7 @@ import { sendEmail } from '@/utils/email';
 import { showAuthButtonsFlag } from '@/flags';
 import { getUserId } from '@/app/actions/user';
 import { checkSvgImage, retraceImage, traceImage } from '@/utils/traceImage';
+import { signOut } from '@/auth';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -514,4 +515,8 @@ Tags: ${coloringImage.tags?.join(', ')}`,
   });
 
   return response.choices[0].message.content;
+};
+
+export const signOutAction = async () => {
+  await signOut();
 };
