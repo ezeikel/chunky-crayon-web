@@ -33,6 +33,23 @@ const MobileMenu = ({ items }: MobileMenuProps) => {
     }
 
     if (item.href) {
+      if (item.href.startsWith('mailto:')) {
+        return (
+          <a
+            href={item.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 p-2 hover:bg-muted/50 rounded-lg transition-colors"
+            onClick={() => setIsOpen(false)}
+          >
+            {item.iconName && (
+              <FontAwesomeIcon icon={item.iconName} size="lg" />
+            )}
+            {item.label}
+          </a>
+        );
+      }
+
       return (
         <Link
           href={item.href}

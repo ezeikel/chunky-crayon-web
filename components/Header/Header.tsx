@@ -11,6 +11,7 @@ import {
   faUser,
   faTag,
   faRightToBracket,
+  faHeadset,
 } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
@@ -50,6 +51,7 @@ type DropdownItem = {
   href?: string;
   action?: () => Promise<void>;
   separator?: boolean;
+  external?: boolean;
 };
 
 const handleSignOut = async () => {
@@ -63,6 +65,12 @@ const DROPDOWN_ITEMS: DropdownItem[] = [
     icon: faCreditCard,
     label: 'Billing',
     href: '/account/billing',
+  },
+  {
+    icon: faHeadset,
+    label: 'Support',
+    href: 'mailto:support@chunkycrayon.com',
+    external: true,
   },
   {
     separator: true,
@@ -98,10 +106,22 @@ const renderDropdown = (dropdownUser: Partial<User>) => (
         if (item.href) {
           return (
             <DropdownMenuItem key={item.label} asChild>
-              <Link href={item.href} className="flex items-center gap-2">
-                <FontAwesomeIcon icon={item.icon!} size="lg" />
-                <span className="text-base">{item.label}</span>
-              </Link>
+              {item.external ? (
+                <a
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2"
+                >
+                  <FontAwesomeIcon icon={item.icon!} size="lg" />
+                  <span className="text-base">{item.label}</span>
+                </a>
+              ) : (
+                <Link href={item.href} className="flex items-center gap-2">
+                  <FontAwesomeIcon icon={item.icon!} size="lg" />
+                  <span className="text-base">{item.label}</span>
+                </Link>
+              )}
             </DropdownMenuItem>
           );
         }
@@ -135,6 +155,12 @@ const ITEMS: NavItem[] = [
     label: 'Pricing',
     icon: <FontAwesomeIcon icon={faTag} size="lg" />,
     href: '/pricing',
+    visibility: 'unauthenticated',
+  },
+  {
+    label: 'Support',
+    icon: <FontAwesomeIcon icon={faHeadset} size="lg" />,
+    href: 'mailto:support@chunkycrayon.com',
     visibility: 'unauthenticated',
   },
   {
@@ -187,6 +213,11 @@ const getMobileItems = (user: Partial<User> | null): MobileNavItem[] => {
       href: '/account/billing',
     });
     items.push({
+      label: 'Support',
+      iconName: faHeadset,
+      href: 'mailto:support@chunkycrayon.com',
+    });
+    items.push({
       label: 'Sign out',
       iconName: faSignOut,
       action: 'signout',
@@ -203,6 +234,11 @@ const getMobileItems = (user: Partial<User> | null): MobileNavItem[] => {
       href: '/pricing',
     });
     items.push({
+      label: 'Support',
+      iconName: faHeadset,
+      href: 'mailto:support@chunkycrayon.com',
+    });
+    items.push({
       label: 'Sign in',
       iconName: faRightToBracket,
       href: '/signin',
@@ -211,10 +247,41 @@ const getMobileItems = (user: Partial<User> | null): MobileNavItem[] => {
   return items;
 };
 
+const renderNavLink = (item: NavItem, user: Partial<User> | null) => {
+  if (item.href?.startsWith('mailto:')) {
+    return (
+      <a
+        href={item.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2"
+      >
+        {item.icon}
+        {item.label}
+      </a>
+    );
+  }
+
+  if (item.href) {
+    return (
+      <Link href={item.href} className="flex items-center gap-2">
+        {item.icon}
+        {item.label}
+      </Link>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      {item.icon}
+      {item.component?.(user as Partial<User>)}
+    </div>
+  );
+};
+
 const Header = async () => {
   const user = await getCurrentUser();
   const showAuthButtons = await showAuthButtonsFlag();
-
   const mobileItems = getMobileItems(user);
 
   const renderItems = () => {
@@ -244,17 +311,7 @@ const Header = async () => {
                 key={item.href || item.label}
                 className={cn('p-2', item.liClass)}
               >
-                {item.href ? (
-                  <Link href={item.href} className="flex items-center gap-2">
-                    {item.icon}
-                    {item.label}
-                  </Link>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    {item.icon}
-                    {item.component?.(user)}
-                  </div>
-                )}
+                {renderNavLink(item, user)}
               </li>
             ))}
           </ul>
@@ -271,17 +328,7 @@ const Header = async () => {
               key={item.href || item.label}
               className={cn('p-2', item.liClass)}
             >
-              {item.href ? (
-                <Link href={item.href} className="flex items-center gap-2">
-                  {item.icon}
-                  {item.label}
-                </Link>
-              ) : (
-                <div className="flex items-center gap-2">
-                  {item.icon}
-                  {item.component?.({} as Partial<User>)}
-                </div>
-              )}
+              {renderNavLink(item, null)}
             </li>
           ))}
         </ul>
