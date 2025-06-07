@@ -172,7 +172,10 @@ const Billing = ({ user }: BillingProps) => {
               </p>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleManageSubscription}>
+              <Button
+                onClick={handleManageSubscription}
+                className="bg-orange hover:bg-orange/90 text-white"
+              >
                 Manage Subscription
               </Button>
             </CardFooter>
@@ -190,6 +193,7 @@ const Billing = ({ user }: BillingProps) => {
                 onClick={() => {
                   window.location.href = '/pricing';
                 }}
+                className="bg-orange hover:bg-orange/90 text-white"
               >
                 View Plans
               </Button>
@@ -220,7 +224,7 @@ const Billing = ({ user }: BillingProps) => {
                 </CardContent>
                 <CardFooter>
                   <Button
-                    className="w-full"
+                    className="w-full bg-orange hover:bg-orange/90 text-white"
                     onClick={() => handleCreditPurchase(pack)}
                     disabled={loadingCredits === pack.name}
                   >
@@ -243,12 +247,12 @@ const Billing = ({ user }: BillingProps) => {
               className={cn(
                 'flex flex-col h-full border-2 transition-shadow',
                 currentSubscription?.planName === plan.key
-                  ? 'border-primary shadow-lg scale-105 relative z-10'
+                  ? 'border-orange shadow-lg scale-105 relative z-10'
                   : 'border-border',
               )}
             >
               {currentSubscription?.planName === plan.key && (
-                <span className="absolute -top-4 right-1/2 translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full shadow">
+                <span className="absolute -top-4 right-1/2 translate-x-1/2 bg-orange text-white text-xs font-bold px-3 py-1 rounded-full shadow">
                   Current Plan
                 </span>
               )}
@@ -283,7 +287,7 @@ const Billing = ({ user }: BillingProps) => {
               </CardContent>
               <CardFooter className="flex flex-col gap-2">
                 <Button
-                  className="w-full text-lg py-2"
+                  className="w-full text-lg py-2 bg-orange hover:bg-orange/90 text-white"
                   onClick={() =>
                     handlePlanChange({
                       planName: plan.key,

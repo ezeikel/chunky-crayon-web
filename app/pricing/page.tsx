@@ -82,8 +82,8 @@ const PricingPage = () => {
               className={cn(
                 'px-4 py-2 rounded-full font-semibold transition',
                 interval === key
-                  ? 'bg-primary text-primary-foreground shadow'
-                  : 'bg-muted text-muted-foreground hover:bg-primary/10',
+                  ? 'bg-orange text-white shadow'
+                  : 'bg-orange/10 text-orange hover:bg-orange/20',
               )}
               onClick={() => setInterval(key)}
               aria-pressed={interval === key}
@@ -100,12 +100,12 @@ const PricingPage = () => {
             className={cn(
               'flex flex-col h-full border-2 transition-shadow',
               plan.mostPopular
-                ? 'border-primary shadow-lg scale-105 relative z-10'
+                ? 'border-orange shadow-lg scale-105 relative z-10'
                 : 'border-border',
             )}
           >
             {plan.mostPopular && (
-              <span className="absolute -top-4 right-1/2 translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full shadow">
+              <span className="absolute -top-4 right-1/2 translate-x-1/2 bg-orange text-white text-xs font-bold px-3 py-1 rounded-full shadow">
                 Most Popular
               </span>
             )}
@@ -146,7 +146,7 @@ const PricingPage = () => {
             </CardContent>
             <CardFooter className="flex flex-col gap-2">
               <Button
-                className="w-full text-lg py-2"
+                className="w-full text-lg py-2 bg-orange hover:bg-orange/90 text-white"
                 onClick={() => handlePurchase(plan)}
                 disabled={loadingPlan === plan.name}
               >
