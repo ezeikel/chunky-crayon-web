@@ -3,6 +3,8 @@ import {
   faInstagram,
   faThreads,
   faFacebookF,
+  faTiktok,
+  faPinterest,
 } from '@fortawesome/free-brands-svg-icons';
 
 export const CREATE_COLORING_PAGE_PROMPT_PRE_PROMPT = `Create a detailed JSON prompt suitable for DALL-E 3 to generate a simple line drawing image for a coloring book. The image should depict a kid-friendly scene inspired by the following description: '`;
@@ -393,24 +395,30 @@ export const SOCIAL_LINKS = [
   },
   {
     id: '4',
+    label: 'TikTok',
+    href: 'https://tiktok.com/@getchunkycrayon',
+    icon: faTiktok,
+  },
+  {
+    id: '5',
+    label: 'Pinterest',
+    href: 'https://pinterest.com/getchunkycrayon',
+    icon: faPinterest,
+  },
+  {
+    id: '6',
     label: 'Threads',
     href: 'https://threads.net/@getchunkycrayon',
     icon: faThreads,
   },
   // {
-  //   id: '5',
+  //   id: '7',
   //   label: 'YouTube',
   //   href: 'https://youtube.com/@getchunkycrayon',
   //   icon: faYoutube,
   // },
   // {
-  //   id: '6',
-  //   label: 'TikTok',
-  //   href: 'https://tiktok.com/@chunkycrayon',
-  //   icon: faTiktok,
-  // },
-  // {
-  //   id: '7',
+  //   id: '8',
   //   label: 'WhatsApp',
   //   href: 'https://wa.me/447932442879',
   //   icon: faWhatsapp,
