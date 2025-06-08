@@ -68,7 +68,7 @@ export const createCheckoutSession = async (
       },
     ],
     mode,
-    success_url: `${origin}/account/billing/success`,
+    success_url: `${origin}/account/billing/success?session_id={CHECKOUT_SESSION_ID}`,
     // cancel_url: `${origin}/account/billing`,
     cancel_url: `${origin}/pricing`,
     client_reference_id: userId,
@@ -308,6 +308,20 @@ export const changeSubscription = async ({
     };
   } catch (error) {
     console.error('Error updating subscription:', error);
+    return null;
+  }
+};
+
+export const getStripeSession = async (sessionId: string) => {
+  if (!sessionId) return null;
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    return {
+      amount_total: session.amount_total,
+      currency: session.currency,
+    };
+  } catch (error) {
+    console.error('Error fetching Stripe session:', error);
     return null;
   }
 };
