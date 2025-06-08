@@ -10,6 +10,7 @@ import cn from '@/utils/cn';
 import Header from '@/components/Header/Header';
 import { Toaster } from '@/components/ui/sonner';
 import BasicHeader from '@/components/BasicHeader/BasicHeader';
+import Footer from '@/components/Footer/Footer';
 import { tondo, rooneySans } from '@/fonts';
 import '@/global.css';
 import Providers from './providers';
@@ -103,6 +104,7 @@ export default function RootLayout({
             {children}
             {shouldInjectToolbar && <VercelToolbar />}
           </main>
+          <Footer />
         </Providers>
         <Toaster />
         <Analytics />

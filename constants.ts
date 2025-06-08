@@ -1,4 +1,9 @@
 import { PlanName, BillingPeriod } from '@prisma/client';
+import {
+  faInstagram,
+  faThreads,
+  faFacebookF,
+} from '@fortawesome/free-brands-svg-icons';
 
 export const CREATE_COLORING_PAGE_PROMPT_PRE_PROMPT = `Create a detailed JSON prompt suitable for DALL-E 3 to generate a simple line drawing image for a coloring book. The image should depict a kid-friendly scene inspired by the following description: '`;
 
@@ -365,4 +370,49 @@ export const CREDIT_PACKS: CreditPack[] = [
     price: '£20.00',
     stripePriceEnv: process.env.NEXT_PUBLIC_STRIPE_PRICE_CREDITS_1000 as string,
   },
+];
+
+export const SOCIAL_LINKS = [
+  // {
+  //   id: '1',
+  //   label: 'X',
+  //   href: 'https://x.com/chunkycrayon',
+  //   icon: faXTwitter,
+  // },
+  {
+    id: '2',
+    label: 'Instagram',
+    href: 'https://instagram.com/getchunkycrayon',
+    icon: faInstagram,
+  },
+  {
+    id: '3',
+    label: 'Facebook',
+    href: 'https://facebook.com/getchunkycrayon',
+    icon: faFacebookF,
+  },
+  {
+    id: '4',
+    label: 'Threads',
+    href: 'https://threads.net/@getchunkycrayon',
+    icon: faThreads,
+  },
+  // {
+  //   id: '5',
+  //   label: 'YouTube',
+  //   href: 'https://youtube.com/@getchunkycrayon',
+  //   icon: faYoutube,
+  // },
+  // {
+  //   id: '6',
+  //   label: 'TikTok',
+  //   href: 'https://tiktok.com/@chunkycrayon',
+  //   icon: faTiktok,
+  // },
+  // {
+  //   id: '7',
+  //   label: 'WhatsApp',
+  //   href: 'https://wa.me/447932442879',
+  //   icon: faWhatsapp,
+  // },
 ];
