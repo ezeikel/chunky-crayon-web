@@ -2,9 +2,10 @@
 
 import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { track } from '@vercel/analytics';
 import { createColoringImage } from '@/app/actions';
 import cn from '@/utils/cn';
+import { trackEvent } from '@/utils/analytics';
+import { ANALYTICS_EVENTS } from '@/constants';
 import UserInput from './UserInput';
 import UserInputV2 from './UserInputV2';
 
@@ -37,7 +38,7 @@ const CreateColoringPageForm = ({
             description: (formData.get('description') as string) || '',
           };
 
-          track('Submitted coloring image description', {
+          trackEvent(ANALYTICS_EVENTS.SUBMITTED_COLORING_IMAGE_DESCRIPTION, {
             description: rawFormData.description,
             type: 'text',
           });

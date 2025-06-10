@@ -425,3 +425,15 @@ export const SOCIAL_LINKS = [
   //   icon: faWhatsapp,
   // },
 ];
+
+export const ANALYTICS_EVENTS = {
+  PURCHASE: 'Purchase',
+  SIGNUP: 'Signup',
+  SUBMITTED_COLORING_IMAGE_DESCRIPTION: 'Submitted coloring image description',
+  SIGNED_UP_TO_COLORING_PAGE_EMAIL_LIST:
+    'Signed up to coloring page email list',
+  CLICKED_SAVE_COLORING_IMAGE: 'Clicked save coloring image',
+  CLICKED_PRINT_COLORING_IMAGE: 'Clicked print coloring image',
+  COLOR_SELECTED: 'Color selected',
+  COLORING_STROKE: 'Coloring stroke',
+} as const;

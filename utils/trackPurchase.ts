@@ -1,3 +1,6 @@
+import { ANALYTICS_EVENTS } from '@/constants';
+import { trackEvent } from './analytics';
+
 export type PurchaseTrackingProps = {
   value: number;
   currency: string;
@@ -33,4 +36,11 @@ export const trackPurchase = ({
       currency,
     });
   }
+  // Vercel Analytics
+  trackEvent(ANALYTICS_EVENTS.PURCHASE, {
+    value,
+    currency,
+    eventId,
+    quantity,
+  });
 };

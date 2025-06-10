@@ -4,6 +4,8 @@ import { useRef, useEffect, useState } from 'react';
 import { ColoringImage } from '@prisma/client';
 import { useColoringContext } from '@/contexts/coloring';
 import cn from '@/utils/cn';
+import { trackEvent } from '@/utils/analytics';
+import { ANALYTICS_EVENTS } from '@/constants';
 
 type ImageCanvasProps = {
   coloringImage: Partial<ColoringImage>;
@@ -188,7 +190,10 @@ const ImageCanvas = ({ coloringImage, className }: ImageCanvasProps) => {
     setIsDrawing(true);
     colorAtPosition(event.clientX, event.clientY);
   };
-  const handleMouseUp = () => setIsDrawing(false);
+  const handleMouseUp = () => {
+    setIsDrawing(false);
+    trackEvent(ANALYTICS_EVENTS.COLORING_STROKE, { color: selectedColor });
+  };
 
   const handleMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing) {
@@ -215,6 +220,7 @@ const ImageCanvas = ({ coloringImage, className }: ImageCanvasProps) => {
 
   const handleTouchEnd = () => {
     setIsDrawing(false);
+    trackEvent(ANALYTICS_EVENTS.COLORING_STROKE, { color: selectedColor });
   };
 
   return (

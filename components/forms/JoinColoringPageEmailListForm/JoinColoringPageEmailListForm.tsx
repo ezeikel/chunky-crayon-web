@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useActionState } from 'react';
-import { track } from '@vercel/analytics';
 import { toast } from 'sonner';
 import SubmitButton from '@/components/buttons/SubmitButton/SubmitButton';
 import cn from '@/utils/cn';
 import { Input } from '@/components/ui/input';
 import { joinColoringPageEmailList } from '@/app/actions';
+import { trackEvent } from '@/utils/analytics';
+import { ANALYTICS_EVENTS } from '@/constants';
 
 type JoinColoringPageEmailListFormProps = {
   className?: string;
@@ -30,7 +31,7 @@ const JoinColoringPageEmailListForm = ({
         description: 'You have successfully joined the email list!',
       });
 
-      track('Signed up to coloring page email list', {
+      trackEvent(ANALYTICS_EVENTS.SIGNED_UP_TO_COLORING_PAGE_EMAIL_LIST, {
         email: state.email as string,
       });
 

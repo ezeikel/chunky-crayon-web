@@ -1,13 +1,14 @@
 'use client';
 
-import { track } from '@vercel/analytics';
+import dynamic from 'next/dynamic';
 import { ColoringImage } from '@prisma/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileArrowDown } from '@fortawesome/pro-regular-svg-icons';
+import { usePDF } from '@react-pdf/renderer';
 import ColoringPageDocument from '@/components/pdfs/ColoringPageDocument/ColoringPageDocument';
 import cn from '@/utils/cn';
-import { usePDF } from '@react-pdf/renderer';
-import dynamic from 'next/dynamic';
+import { trackEvent } from '@/utils/analytics';
+import { ANALYTICS_EVENTS } from '@/constants';
 
 const formatTitleForFileName = (title: string | undefined): string => {
   if (!title) {
@@ -79,7 +80,7 @@ const DownloadPDFButtonContent = ({
         },
       )}
       onClick={() =>
-        track('Clicked save coloring image', {
+        trackEvent(ANALYTICS_EVENTS.CLICKED_SAVE_COLORING_IMAGE, {
           id: coloringImage.id as string,
         })
       }

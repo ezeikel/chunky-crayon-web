@@ -1,8 +1,9 @@
 'use client';
 
-import { COLORS } from '@/constants';
+import { COLORS, ANALYTICS_EVENTS } from '@/constants';
 import { useColoringContext } from '@/contexts/coloring';
 import cn from '@/utils/cn';
+import { trackEvent } from '@/utils/analytics';
 
 type ColorPaletteProps = {
   className?: string;
@@ -25,7 +26,10 @@ const ColorPalette = ({ className }: ColorPaletteProps) => {
             backgroundColor: color,
             border: selectedColor === color ? '2px solid black' : 'none',
           }}
-          onClick={() => setSelectedColor(color)}
+          onClick={() => {
+            trackEvent(ANALYTICS_EVENTS.COLOR_SELECTED, { color });
+            setSelectedColor(color);
+          }}
           key={color}
         />
       ))}
