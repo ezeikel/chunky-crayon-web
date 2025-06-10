@@ -4,18 +4,20 @@ import { getStripeSession } from '@/app/actions/stripe';
 const BillingSuccessPage = async ({
   searchParams,
 }: {
-  searchParams: { session_id?: string };
+  searchParams: Promise<{ session_id?: string }>;
 }) => {
   let sessionData = null;
-  if (searchParams.session_id) {
-    sessionData = await getStripeSession(searchParams.session_id);
+  const { session_id: sessionId } = await searchParams;
+
+  if (sessionId) {
+    sessionData = await getStripeSession(sessionId);
   }
 
   return (
     <BillingSuccess
       amount={sessionData?.amount_total ? sessionData.amount_total / 100 : null}
       currency={sessionData?.currency?.toUpperCase() || 'GBP'}
-      sessionId={searchParams.session_id}
+      sessionId={sessionId}
     />
   );
 };
