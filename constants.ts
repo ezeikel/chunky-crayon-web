@@ -377,49 +377,49 @@ export const CREDIT_PACKS: CreditPack[] = [
 
 export const SOCIAL_LINKS = [
   {
-    id: '1',
+    id: 'instagram',
     label: 'Instagram',
     href: 'https://instagram.com/getchunkycrayon',
     icon: faInstagram,
   },
   {
-    id: '2',
+    id: 'facebook',
     label: 'Facebook',
     href: 'https://facebook.com/getchunkycrayon',
     icon: faFacebookF,
   },
   {
-    id: '3',
+    id: 'tiktok',
     label: 'TikTok',
     href: 'https://tiktok.com/@getchunkycrayon',
     icon: faTiktok,
   },
   {
-    id: '4',
+    id: 'pinterest',
     label: 'Pinterest',
     href: 'https://pinterest.com/getchunkycrayon',
     icon: faPinterest,
   },
   {
-    id: '5',
+    id: 'x',
     label: 'X',
     href: 'https://x.com/chunkycrayon',
     icon: faXTwitter,
   },
   {
-    id: '7',
+    id: 'threads',
     label: 'Threads',
     href: 'https://threads.net/@getchunkycrayon',
     icon: faThreads,
   },
   // {
-  //   id: '8',
+  //   id: 'youtube',
   //   label: 'YouTube',
   //   href: 'https://youtube.com/@getchunkycrayon',
   //   icon: faYoutube,
   // },
   // {
-  //   id: '9',
+  //   id: 'whatsapp',
   //   label: 'WhatsApp',
   //   href: 'https://wa.me/447932442879',
   //   icon: faWhatsapp,

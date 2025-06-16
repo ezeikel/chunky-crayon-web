@@ -5,15 +5,15 @@ import { Analytics } from '@vercel/analytics/react';
 import { VercelToolbar } from '@vercel/toolbar/next';
 import { config } from '@fortawesome/fontawesome-svg-core';
 import PlausibleProvider from 'next-plausible';
-import '@fortawesome/fontawesome-svg-core/styles.css';
 import cn from '@/utils/cn';
 import Header from '@/components/Header/Header';
 import { Toaster } from '@/components/ui/sonner';
 import BasicHeader from '@/components/BasicHeader/BasicHeader';
 import Footer from '@/components/Footer/Footer';
 import { tondo, rooneySans } from '@/fonts';
-import '@/global.css';
 import Providers from './providers';
+import '@/global.css';
+import '@fortawesome/fontawesome-svg-core/styles.css';
 
 config.autoAddCss = false;
 

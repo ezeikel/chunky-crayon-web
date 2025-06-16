@@ -17,8 +17,8 @@
     "check-format": "pnpm prettier --list-different",
     "preinstall": "pnpm dlx only-allow pnpm",
     "postinstall": "prisma generate",
-    "prisma:generate": "prisma generate",
-    "prisma:studio": "prisma studio",
+    "db:generate": "prisma generate",
+    "db:studio": "prisma studio",
     "prepare": "husky"
   },
   "lint-staged": {

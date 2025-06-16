@@ -1,8 +1,5 @@
 import Link from 'next/link';
 import { User } from '@prisma/client';
-import { showAuthButtonsFlag } from '@/flags';
-import { getCurrentUser } from '@/app/actions/user';
-import { signOut } from '@/auth';
 import {
   faCoins,
   faCreditCard,
@@ -15,7 +12,10 @@ import {
 } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
+import { getCurrentUser } from '@/app/actions/user';
 import cn from '@/lib/utils';
+import { showAuthButtonsFlag } from '@/flags';
+import { signOut } from '@/auth';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
